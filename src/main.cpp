@@ -242,3 +242,344 @@ void opcontrol() {
         pros::delay(10);
     }
 }
+// =============================================================
+//  SKILLS AUTONOMOUS ROUTINE
+// =============================================================
+void skills() {
+void skills(){
+	intake.telOP(true, false, false, false, false, false);
+	// chassis.setPose(0, 0, 0);
+
+	chassis.setPose(-49.920000, 15.120000, 85.236000);
+
+	
+
+	chassis.turnToHeading(90.0, 503);
+	chassis.moveToPoint(-36.24, 15.12, 1245);
+	pros::delay(50);
+	chassis.turnToHeading(52.815294, 805);
+	chassis.moveToPoint(-22.32, 25.68, 1379);
+	pros::delay(50);
+	chassis.turnToHeading(312.633752, 1192);
+	chassis.moveToPoint(-7.2, 11.76, 1478, {.forwards = false});
+	pros::delay(1000);
+	middle_goal_score(true);
+	
+	
+	// pros::delay(1000);
+
+
+	chassis.turnToHeading(318.868204, 536);
+	chassis.moveToPoint(-38.64, 47.76, 2141);
+	chassis.waitUntil(11.144602);
+	middle_goal_score(false);
+	chassis.waitUntilDone();
+	pros::delay(50);
+	chassis.turnToHeading(258.310631, 969);
+	chassis.moveToPoint(-45.6, 46.32, 1012);
+	chassis.waitUntil(0.481858);
+
+
+	matchload_activate(true);
+	chassis.waitUntilDone();
+	pros::delay(300);
+	chassis.turnToHeading(270, 646);
+	chassis.moveToPoint(-74.32, 46.32, 3420, {.maxSpeed=50}, false); //node 6
+
+	// pros::delay(2000);
+	chassis.moveToPoint(-45.12, 46.32, 1436, {.forwards = false}); //node 7	
+	chassis.waitUntil(14.629714);
+	matchload_activate(false);
+
+
+	intake.telOP(true, false, false, false, false, false);
+	chassis.waitUntilDone();
+	pros::delay(50);
+	chassis.turnToHeading(24.034288, 1258);
+	chassis.moveToPoint(-37.2, 64.08, 1443); //node 8
+	// pros::delay(50);
+	// chassis.turnToHeading(88.174458, 991);
+	// chassis.moveToPoint(-19.922253, 64.630685, 1373);
+	// pros::delay(50);
+	// chassis.moveToPoint(-3.843288, 65.143162, 1332);
+	// pros::delay(50);
+	// chassis.moveToPoint(10.100794, 65.587595, 1255);
+	// pros::delay(50);
+	// chassis.moveToPoint(23.04, 66.0, 1217);
+	// pros::delay(50);
+	chassis.turnToHeading(91.487868, 465);
+	chassis.moveToPoint(41.52, 70.52, 1413); //node 13
+	pros::delay(50);
+	chassis.turnToHeading(177.207298, 1116);
+	chassis.moveToPoint(42.0, 53, 1573); // node 14
+	pros::delay(50);
+	chassis.turnToHeading(90.855097, 1120);
+	
+	chassis.moveToPoint(23, 53, 1000, {.forwards = false}, false); //node 15
+	long_goal_score(true);
+	pros::delay(2500); 
+	chassis.waitUntil(11.940754);
+
+
+	//initial match, top left score
+	
+	chassis.turnToHeading(90, 461); //prev89
+	chassis.moveToPoint(47.76, 53, 1518); //prey56 //node 16?? ///current 48
+	chassis.waitUntil(16.507699);
+
+
+	//top left matchload
+	matchload_activate(true);
+	chassis.waitUntilDone();
+	pros::delay(500);
+	chassis.turnToHeading(85, 461);
+	chassis.moveToPoint(65.52, 54, 3389, {.maxSpeed = 50}); //prev 5 //node 17
+	// pros::delay(2000);
+	chassis.turnToHeading(90.0, 461);
+	chassis.moveToPoint(23, 52.5, 1500, {.forwards = false}, false); //node 18 //scoring on long goal
+	// chassis.waitUntil(32.81013);
+//__________above no change is good
+
+	//top left 2nd matchload score		
+	matchload_activate(false);
+
+	long_goal_score(true);
+	pros::delay(2500);
+	chassis.moveToPoint(45, 53, 1539); //node 19
+
+	chassis.turnToHeading(180, 1204);
+	// LOCALIZATION RESET: Near left wall (X = -72), reset X coordinate
+	// Robot is at the wall, heading 270 (facing left), so left sensor points at wall
+	// localizer.resetXWithHeading(-72.0f);)
+	
+	// chassis.moveToPoint(30.48, -26.16, 2975); //node 20
+	// pros::delay(50);
+	// chassis.turnToHeading(144.833564, 883);
+	chassis.moveToPoint(45, -49, 2000000, {.maxSpeed = 80}, false); // ode 21
+
+	pros::delay(200);
+
+	if(distance.get_distance() > 600){
+		while(distance.get_distance() > 530){
+			left_motors.move_velocity(50);
+			right_motors.move_velocity(50);
+		}
+	}
+	else if(distance.get_distance() < 600){
+		while(distance.get_distance() < 530){
+			left_motors.move_velocity(-50);
+			right_motors.move_velocity(-50);
+		}
+	}
+	left_motors.move_velocity(0);
+	right_motors.move_velocity(0);
+	chassis.turnToHeading(175, 1000);
+	chassis.setPose(chassis.getPose().x, -53, 180);
+
+	// localizer.resetXWithHeading(72)
+	// chassis.waitUntil(21.38118);
+
+
+	//top right matchload
+	// chassis.waitUntilDone();
+	// pros::delay(500);
+	
+	chassis.turnToHeading(90, 941, {}, false);
+	
+
+	long_goal_score(false);
+	matchload_activate(true);
+	pros::delay(400);
+
+	chassis.moveToPoint(65, -53, 1397, {}, false); //node 22
+
+	chassis.waitUntilDone();
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 	//reset code HERE. node 6 is = node 22.
+// 	chassis.setPose(resetPosX, resetPosY, -90);
+	
+// 	pros::delay(2000);
+
+// 	chassis.moveToPoint(-45.12, 46.32, 1436, {.forwards = false}); //node 7	
+// 	chassis.waitUntil(14.629714);
+// 	matchload_activate(false);
+
+
+// 	intake.telOP(true, false, false, false, false, false);
+// 	chassis.waitUntilDone();
+// 	pros::delay(50);
+// 	chassis.turnToHeading(24.034288, 1258);
+// 	chassis.moveToPoint(-37.2, 64.08, 1443); //node 8
+// 	chassis.turnToHeading(91.487868, 465);
+// 	chassis.moveToPoint(41.52, 70.52, 1413); //node 13
+// 	pros::delay(50);
+// 	chassis.turnToHeading(177.207298, 1116);
+// 	chassis.moveToPoint(42.0, 53, 1573); // node 14
+// 	pros::delay(50);
+// 	chassis.turnToHeading(90.855097, 1120);
+	
+// 	chassis.moveToPoint(23, 53, 1000, {.forwards = false}, false); //node 15
+// 	long_goal_score(true);
+// 	pros::delay(2500); 
+// 	chassis.waitUntil(11.940754);
+
+
+// 	//initial match, top left score
+	
+// 	chassis.turnToHeading(90, 461); //prev89
+// 	chassis.moveToPoint(47.76, 53, 1518); //prey56 //node 16?? ///current 48
+// 	chassis.waitUntil(16.507699);
+
+
+// 	//top left matchload
+// 	matchload_activate(true);
+// 	chassis.waitUntilDone();
+// 	pros::delay(500);
+// 	chassis.turnToHeading(85, 461);
+// 	chassis.moveToPoint(65.52, 54, 3389, {.maxSpeed = 50}); //prev 5 //node 17
+// 	// pros::delay(2000);
+// 	chassis.turnToHeading(90.0, 461);
+// 	chassis.moveToPoint(23, 52.5, 1500, {.forwards = false}, false); //node 18 //scoring on long goal
+// 	// chassis.waitUntil(32.81013);
+// //__________above no change is good
+
+// 	//top left 2nd matchload score		
+// 	matchload_activate(false);
+
+// 	long_goal_score(true);
+// 	pros::delay(2500);
+// 	chassis.moveToPoint(45, 53, 1539); //node 19
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	pros::delay(2000);
+	chassis.turnToHeading(90, 461);
+	// chassis.moveToPoint(44.88, -53, 3727, {.forwards = false}); //node 23
+	chassis.moveToPoint(45, -49, 2000000, {.maxSpeed = 80}, false); // ode 21 NEW NODE 23
+	chassis.waitUntil(13.722215);
+
+	
+	//top right finished matchload
+	matchload_activate(false);
+	chassis.waitUntilDone();
+	pros::delay(50);
+	chassis.turnToHeading(222.909841, 1317);
+	chassis.moveToPoint(33, -73.08, 1561);//node 24
+	pros::delay(50);
+	chassis.turnToHeading(270, 884);
+	chassis.moveToPoint(-45.36, -73.08, 2753);//node 25
+	pros::delay(50);
+
+	//bottom right section
+	chassis.turnToHeading(354.897835, 1108);
+	chassis.moveToPoint(-46.56, -47, 1237); //node 26
+	pros::delay(50);
+	chassis.turnToHeading(270.0, 1112);
+	chassis.moveToPoint(-23, -48, 1500, {.forwards = false}); //node 27
+
+	//bottom right score
+	long_goal_score(true);
+	pros::delay(2500);
+	matchload_activate(true);
+	pros::delay(50);
+	chassis.moveToPoint(-61.44, -47, 3870, {.maxSpeed=50}); //nodem28 //bottom right matchload
+
+	chassis.waitUntilDone();
+	pros::delay(50);
+	chassis.moveToPoint(-51.84, -47, 1941, {.forwards = false});//node 29
+	pros::delay(500);
+	chassis.moveToPoint(-24.96, -47, 1663, {.forwards = false}); //node 30
+	chassis.waitUntil(20.017067);
+
+	//bottom right matchload score
+	matchload_activate(false);
+	long_goal_score(true);
+	pros::delay(2500);
+	chassis.waitUntilDone();
+	pros::delay(50);
+	chassis.turnToHeading(268.898294, 461);
+	chassis.moveToPoint(-37.44, -49, 1199); //node 31
+	pros::delay(50);
+	chassis.turnToHeading(319.820766, 906);
+	chassis.moveToPoint(-64.8, -17.28, 2006); //node 32
+	pros::delay(50);
+	chassis.turnToHeading(0.806929, 834);
+	chassis.moveToPoint(-64.56, -0.24, 1364); //node 33
+
+	// Estimated total time: 63.92 s
+
+
+}
+
+// void skills(){
+// 	chassis.setPose(0, 0, 0);
+
+// 	intake.telOP(true, false, false, false, false, false);
+// 	chassis.moveToPose( -15, 34, -21, 2000, {.minSpeed = 50}, false);
+// 	pros::delay(300);
+// 	chassis.turnToHeading(-131, 1000); // fix
+// 	chassis.moveToPose(7, 44, -131, 1600,{.forwards=false}, false);
+// 	intake.telOP(false, false, true, false, false, false);
+// 	pros::delay(400);
+// 	intake.telOP(true, false, false, false, false, false);
+// 	pros::delay(200);
+// 	chassis.moveToPoint(-34, 8, 2000);
+// 	chassis.turnToHeading(180, 1000);
+// 	tongue.set_value(true);
+// 	chassis.moveToPoint(-35, -20, 1600, {.maxSpeed = 40});
+// 	chassis.moveToPoint(-35.5, 30, 1000, {.forwards=false,.maxSpeed = 80}, false);
+// 	intake.telOP(false, true, false, false, false, false);
+// 	pros::delay(2000);
+// 	tongue.set_value(false);
+// 	chassis.moveToPoint(-35.5, 15, 1000, {.minSpeed = 60}, false);
+
+// 	chassis.turnToHeading(-50, 1000);
+// 	chassis.moveToPoint(-50, 30, 3000);
+// 	chassis.turnToHeading(0, 1000);
+// 	chassis.moveToPoint(-50, 95, 2000);
+// 	chassis.turnToHeading(90, 1000);
+// 	chassis.moveToPoint(-35.5, 95, 1000, {}, false);
+// 	chassis.turnToHeading(0, 0, {}, false);
+// 	tongue.set_value(true);
+// 	intake.telOP(true, false, false, false, false, false);
+// 	chassis.moveToPoint(-35.5, 120, 4000, {.maxSpeed = 50}, false);
+
+// 	chassis.moveToPoint(-35.5, 60, 1000, {.forwards = false}, false);
+// 	intake.telOP(false, true, false, false, false, false);
+// }
+
+}
