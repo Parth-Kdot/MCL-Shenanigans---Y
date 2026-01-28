@@ -3,6 +3,12 @@
 #include "pros/misc.h"
 #include "pros/motors.h"
 
+// Define the sensors here so we can use them in both setup AND printing
+pros::Distance distLeft(11);
+pros::Distance distFront(12);
+pros::Distance distRight(13);
+pros::Distance distBack(14);
+
 bool pRon = false;
 bool pYon = false;
 bool pL2on = false;
@@ -10,6 +16,7 @@ bool pL2on = false;
 bool pR_prev = false;
 bool pY_prev = false;
 bool pL2_prev = false;
+
 
 // controller
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
@@ -99,7 +106,6 @@ lemlib::Chassis chassis(drivetrain, lateral_controller, angular_controller, sens
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
-
     // the default rate is 50. however, if you need to change the rate, you
     // can do the following.
     // lemlib::bufferedStdout().setRate(...);
@@ -110,13 +116,17 @@ void initialize() {
 
     // thread to for brain screen and position logging
     pros::Task screenTask([&]() {
-        while (true) {
-            // print robot location to the brain screen
+        while (true) {            // print robot location to the brain screen
             pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
             pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
             pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+            pros::lcd::print(4, "L: %d mm", distLeft.get());
+            pros::lcd::print(5, "F: %d mm", distFront.get());
+            pros::lcd::print(6, "R: %d mm", distRight.get());
+            pros::lcd::print(7, "B: %d mm", distBack.get());
             controller.print(0, 0, "X: %f", pros::c::motor_get_temperature(1)); // x            // log position telemetry
             lemlib::telemetrySink()->info("Chassis pose: {}", chassis.getPose());
+
             // delay to save resources
             pros::delay(100);
         }
