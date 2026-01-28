@@ -2,6 +2,7 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "pros/misc.h"
 #include "pros/motors.h"
+#include "utils/intake.hpp"
 
 // Define the sensors here so we can use them in both setup AND printing
 pros::Distance distLeft(11);
@@ -9,7 +10,7 @@ pros::Distance distFront(12);
 pros::Distance distRight(13);
 pros::Distance distBack(14);
 
-bool pRon = false;
+bool pRon = true;
 bool pYon = false;
 bool pL2on = false;
 
@@ -17,17 +18,113 @@ bool pR_prev = false;
 bool pY_prev = false;
 bool pL2_prev = false;
 
+extern pros::MotorGroup bottom_intake;
+extern pros::MotorGroup top_intake;
+extern pros::adi::DigitalOut piston1;
+extern pros::adi::DigitalOut piston2;
+extern pros::adi::DigitalOut piston3;
+extern Intake intake;
 
-// controller
-pros::Controller controller(pros::E_CONTROLLER_MASTER);
+void set_score_piston_state(bool state) {
+    pRon = state;
+    piston1.set_value(state);
+}
+
+void set_matchload_piston_state(bool state) {
+    pYon = state;
+    piston2.set_value(state);
+}
+
+void set_doinker_piston_state(bool state) {
+    pL2on = state;
+    piston3.set_value(state);
+}
+
+using PistonSetter = void (*)(bool);
+
+static void update_piston_toggle(bool buttonPressed,
+                                 bool& previousButtonState,
+                                 bool& pistonState,
+                                 PistonSetter setter) {
+    if (buttonPressed && !previousButtonState) {
+        setter(!pistonState);
+    }
+    previousButtonState = buttonPressed;
+}
+
+void control_score_piston(bool buttonPressed) {
+    update_piston_toggle(buttonPressed, pR_prev, pRon, set_score_piston_state);
+}
+
+void control_matchload_piston(bool buttonPressed) {
+    update_piston_toggle(buttonPressed, pY_prev, pYon, set_matchload_piston_state);
+}
+
+void control_doinker_piston(bool buttonPressed) {
+    update_piston_toggle(buttonPressed, pL2_prev, pL2on, set_doinker_piston_state);
+}
 
 // motor groups
 pros::MotorGroup rightMotors({5, 6, -7}, pros::MotorGearset::blue); // left motor group - ports 3 (reversed), 4, 5 (reversed)
 pros::MotorGroup leftMotors({-8, -9, 4}, pros::MotorGearset::blue); // right motor group - ports 6, 7, 9 (reversed)
 
-pros::Motor bottom_intake(-1, pros::MotorGearset::blue); // intake motors on ports 7 and 20
+pros::MotorGroup bottom_intake({-1}, pros::MotorGearset::blue); 
 
-pros::Motor top_intake(2, pros::MotorGearset::blue);
+pros::MotorGroup top_intake({2}, pros::MotorGearset::blue);
+
+// intake subsystem
+Intake intake;
+
+void Intake::telOP(bool intake, bool scoreTop, bool scoreMid, bool outtake, bool prime) {
+    pros::MotorGroup& bottomMotor = bottom_intake;
+    pros::MotorGroup& topMotor = top_intake;
+
+    if (outtake) {
+        topMotor.move_velocity(-600);
+        bottomMotor.move_velocity(-600);
+    } else if (intake) {
+        bottomMotor.move_velocity(600);
+        topMotor.move_velocity(0);
+    } else if (scoreMid || scoreTop) {
+        bottomMotor.move_velocity(600);
+        topMotor.move_velocity(600);
+    } else {
+        bottomMotor.move_velocity(0);
+        topMotor.move_velocity(0);
+    }
+
+    set_score_piston_state(!scoreMid);
+}
+
+void middle_goal_score(bool state) {
+    if (state) {
+        bottom_intake.move_velocity(600);
+        top_intake.move_velocity(600);
+    } else {
+        bottom_intake.move_velocity(0);
+        top_intake.move_velocity(0);
+    }
+    set_score_piston_state(state);
+}
+
+void matchload_activate(bool state) {
+    set_matchload_piston_state(state);
+}
+
+void long_goal_score(bool state) {
+    if (state) {
+        bottom_intake.move_velocity(600);
+        top_intake.move_velocity(600);
+    } else {
+        bottom_intake.move_velocity(0);
+        top_intake.move_velocity(0);
+    }
+    set_score_piston_state(state);
+}
+
+
+// controller
+pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // Define pneumatics
 pros::adi::DigitalOut piston1('A'); // piston on port A, score
@@ -105,6 +202,7 @@ lemlib::Chassis chassis(drivetrain, lateral_controller, angular_controller, sens
  */
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
+    set_score_piston_state(true); // ensure score piston starts engaged
     chassis.calibrate(); // calibrate sensors
     // the default rate is 50. however, if you need to change the rate, you
     // can do the following.
@@ -155,24 +253,13 @@ ASSET(example_txt); // '.' replaced with "_" to make c++ happy
  * This is an example autonomous routine which demonstrates a lot of the features LemLib has to offer
  */
 void autonomous() {
-    //set position to x:0, y:0, heading:0
-    chassis.setPose(0, 0, 0);
-    //set for high goal
-    piston2.set_value(true);
-    piston3.set_value(true);
-    // turn to face heading 90 with a very long timeout
-    bottom_intake.move_velocity(600);
-    chassis.moveToPose(8.174, 34.154, 16.36, 2000, {.maxSpeed = 300});
-    // move to match loader ready position
-    chassis.turnToHeading(120, 2000, {.maxSpeed = 300});
-    chassis.moveToPoint(31.34,-2, 2000, {.maxSpeed = 300});
-    chassis.moveToPoint(31.34, 1.286, 2000, {.maxSpeed = 300});
-    chassis.turnToHeading(180, 2000, {.maxSpeed = 300});
-    piston1.set_value(true);
-    pros::delay(500);
-    chassis.moveToPose(31.34, -35, 179.0, 2500, {.maxSpeed = 300});
-    chassis.moveToPose(31.834, 22.904, 178.05, 2000, {.forwards = false, .maxSpeed = 200});
-    top_intake.move_velocity(600);   
+    const int kTeleopTestDelay = 3000; // large delay to observe each state
+    
+    // Matchload piston test (up then down)
+    matchload_activate(true);
+    pros::delay(kTeleopTestDelay);
+    matchload_activate(false);
+    pros::delay(kTeleopTestDelay);
 }
 
 /**
@@ -204,6 +291,7 @@ void opcontrol() {
         // control the intake motors
         if (intakeForwardButton) {
             bottom_intake.move_velocity(600);
+            top_intake.move_velocity(0);
         } else if (intakeBackwardButton) {
             bottom_intake.move_velocity(600);
             top_intake.move_velocity(600);
@@ -215,28 +303,10 @@ void opcontrol() {
             top_intake.move_velocity(0);
         }
 
-		// control the pistons
-		// X button toggle
-		if (pR && !pR_prev) {           // just pressed this loop
-			pRon = !pRon;               // flip state
-			piston1.set_value(pRon);   // set piston to state
-		}
-
-		// B button toggle
-		if (pY && !pY_prev) {           // just pressed this loop
-			pYon = !pYon;
-			piston2.set_value(pYon);
-		}
-
-        if (pL2 && !pL2_prev) {           // just pressed this loop
-            pL2on = !pL2on;
-            piston3.set_value(pL2on);
-        }
-
-		// remember button state for next loop
-		pR_prev = pR;
-		pY_prev = pY;
-        pL2_prev = pL2;
+        // control the pistons via toggle helpers
+        control_score_piston(pR);
+        control_matchload_piston(pY);
+        control_doinker_piston(pL2);
 
         // delay to save resources
         pros::delay(10);
@@ -245,14 +315,11 @@ void opcontrol() {
 // =============================================================
 //  SKILLS AUTONOMOUS ROUTINE
 // =============================================================
-void skills() {
 void skills(){
-	intake.telOP(true, false, false, false, false, false);
+	intake.telOP(true, false, false, false, false);
 	// chassis.setPose(0, 0, 0);
 
 	chassis.setPose(-49.920000, 15.120000, 85.236000);
-
-	
 
 	chassis.turnToHeading(90.0, 503);
 	chassis.moveToPoint(-36.24, 15.12, 1245);
@@ -292,7 +359,7 @@ void skills(){
 	matchload_activate(false);
 
 
-	intake.telOP(true, false, false, false, false, false);
+	intake.telOP(true, false, false, false, false);
 	chassis.waitUntilDone();
 	pros::delay(50);
 	chassis.turnToHeading(24.034288, 1258);
@@ -358,21 +425,21 @@ void skills(){
 	chassis.moveToPoint(45, -49, 2000000, {.maxSpeed = 80}, false); // ode 21
 
 	pros::delay(200);
-
-	if(distance.get_distance() > 600){
-		while(distance.get_distance() > 530){
-			left_motors.move_velocity(50);
-			right_motors.move_velocity(50);
+    
+	if(distFront.get_distance() > 600){
+		while(distFront.get_distance() > 530){
+			leftMotors.move_velocity(50);
+			rightMotors.move_velocity(50);
 		}
 	}
-	else if(distance.get_distance() < 600){
-		while(distance.get_distance() < 530){
-			left_motors.move_velocity(-50);
-			right_motors.move_velocity(-50);
+	else if(distFront.get_distance() < 600){
+		while(distFront.get_distance() < 530){
+			leftMotors.move_velocity(-50);
+			rightMotors.move_velocity(-50);
 		}
 	}
-	left_motors.move_velocity(0);
-	right_motors.move_velocity(0);
+	leftMotors.move_velocity(0);
+	rightMotors.move_velocity(0);
 	chassis.turnToHeading(175, 1000);
 	chassis.setPose(chassis.getPose().x, -53, 180);
 
@@ -395,18 +462,6 @@ void skills(){
 
 	chassis.waitUntilDone();
 
-
-
-
-
-
-
-
-
-
-
-
-
 // 	//reset code HERE. node 6 is = node 22.
 // 	chassis.setPose(resetPosX, resetPosY, -90);
 	
@@ -417,7 +472,7 @@ void skills(){
 // 	matchload_activate(false);
 
 
-// 	intake.telOP(true, false, false, false, false, false);
+// 	intake.telOP(true, false, false, false, false);
 // 	chassis.waitUntilDone();
 // 	pros::delay(50);
 // 	chassis.turnToHeading(24.034288, 1258);
@@ -461,30 +516,6 @@ void skills(){
 // 	long_goal_score(true);
 // 	pros::delay(2500);
 // 	chassis.moveToPoint(45, 53, 1539); //node 19
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	pros::delay(2000);
 	chassis.turnToHeading(90, 461);
@@ -538,48 +569,7 @@ void skills(){
 	chassis.moveToPoint(-64.8, -17.28, 2006); //node 32
 	pros::delay(50);
 	chassis.turnToHeading(0.806929, 834);
-	chassis.moveToPoint(-64.56, -0.24, 1364); //node 33
+chassis.moveToPoint(-64.56, -0.24, 1364); //node 33
 
-	// Estimated total time: 63.92 s
-
-
-}
-
-// void skills(){
-// 	chassis.setPose(0, 0, 0);
-
-// 	intake.telOP(true, false, false, false, false, false);
-// 	chassis.moveToPose( -15, 34, -21, 2000, {.minSpeed = 50}, false);
-// 	pros::delay(300);
-// 	chassis.turnToHeading(-131, 1000); // fix
-// 	chassis.moveToPose(7, 44, -131, 1600,{.forwards=false}, false);
-// 	intake.telOP(false, false, true, false, false, false);
-// 	pros::delay(400);
-// 	intake.telOP(true, false, false, false, false, false);
-// 	pros::delay(200);
-// 	chassis.moveToPoint(-34, 8, 2000);
-// 	chassis.turnToHeading(180, 1000);
-// 	tongue.set_value(true);
-// 	chassis.moveToPoint(-35, -20, 1600, {.maxSpeed = 40});
-// 	chassis.moveToPoint(-35.5, 30, 1000, {.forwards=false,.maxSpeed = 80}, false);
-// 	intake.telOP(false, true, false, false, false, false);
-// 	pros::delay(2000);
-// 	tongue.set_value(false);
-// 	chassis.moveToPoint(-35.5, 15, 1000, {.minSpeed = 60}, false);
-
-// 	chassis.turnToHeading(-50, 1000);
-// 	chassis.moveToPoint(-50, 30, 3000);
-// 	chassis.turnToHeading(0, 1000);
-// 	chassis.moveToPoint(-50, 95, 2000);
-// 	chassis.turnToHeading(90, 1000);
-// 	chassis.moveToPoint(-35.5, 95, 1000, {}, false);
-// 	chassis.turnToHeading(0, 0, {}, false);
-// 	tongue.set_value(true);
-// 	intake.telOP(true, false, false, false, false, false);
-// 	chassis.moveToPoint(-35.5, 120, 4000, {.maxSpeed = 50}, false);
-
-// 	chassis.moveToPoint(-35.5, 60, 1000, {.forwards = false}, false);
-// 	intake.telOP(false, true, false, false, false, false);
-// }
-
+    
 }
