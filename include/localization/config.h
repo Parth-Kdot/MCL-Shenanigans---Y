@@ -1,5 +1,7 @@
 #pragma once
 
+#include "units/units.hpp"
+
 namespace LOCO_CONFIG {
 	constexpr size_t LINE_SENSOR_THRESHOLD = 2000;
 	constexpr QLength LINE_SENSOR_DISTANCE_THRESHOLD = 3_in;

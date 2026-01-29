@@ -41,7 +41,7 @@ namespace CONFIG {
     constexpr Angle ALLIANCE_STAKE_SCORE_HEIGHT = 185_deg;
 
     const Eigen::Vector3f DISTANCE_LEFT_OFFSET((4.5_in).getValue(), (1.5_in).getValue(), (90_deg).getValue());
-    const Eigen::Vector3f DISTANCE_RIGHT_OFFSET((9.6_in).getValue(), (-5.938_in).getValue(), (-90_deg).getValue());
+    const Eigen::Vector3f DISTANCE_RIGHT_OFFSET((4.5_in).getValue(), (-1.5_in).getValue(), (-90_deg).getValue());
     const Eigen::Vector3f DISTANCE_FRONT_OFFSET((9.563_in).getValue(), (5.938_in).getValue(), (0_deg).getValue());
     const Eigen::Vector3f DISTANCE_BACK_OFFSET((-4.56_in).getValue(), (-4.25_in).getValue(), (180_deg).getValue());
 

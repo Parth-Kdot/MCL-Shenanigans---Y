@@ -9,10 +9,10 @@ const std::vector<std::pair<Eigen::Vector2f, Eigen::Vector2f>> WALLS = {
 	{{-1.78308, 1.78308}, {1.78308, 1.78308}},
 };
 
-constexpr float WALL_0_X = 1.78308;
-constexpr float WALL_1_Y = 1.78308;
-constexpr float WALL_2_X = -1.78308;
-constexpr float WALL_3_Y = -1.78308;
+inline constexpr float WALL_0_X = 1.78308F;
+inline constexpr float WALL_1_Y = 1.78308F;
+inline constexpr float WALL_2_X = -1.78308F;
+inline constexpr float WALL_3_Y = -1.78308F;
 
 class Distance : public Sensor {
 private:
