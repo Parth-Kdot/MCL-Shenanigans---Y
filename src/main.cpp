@@ -161,7 +161,8 @@ void opcontrol() {
         
         // Manual Piston Test (A Button)
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
-            piston1.set_value(!piston1.get_value());
+            pRon = !pRon;
+            piston1.set_value(pRon);
         }
 
         pros::delay(20);
