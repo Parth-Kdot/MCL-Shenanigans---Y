@@ -3,10 +3,9 @@
 #include "localization/mcl_task.h"
 #include "pros/misc.h"
 #include "pros/motors.h"
-#include "utils/intake.hpp"  // Kept to avoid breaking existing includes if any
 
 // ============================================================================
-// HARDWARE DEFINITIONS (Preserved from original setup)
+// HARDWARE DEFINITIONS
 // ============================================================================
 
 // Motor Groups
@@ -15,11 +14,6 @@ pros::MotorGroup leftMotors({-8, -9, 4}, pros::MotorGearset::blue);
 pros::MotorGroup bottom_intake({-1}, pros::MotorGearset::blue);
 pros::MotorGroup top_intake({2}, pros::MotorGearset::blue);
 
-// Intake Subsystem
-Intake intake; 
-// Stub for Intake::telOP to avoid link errors if utils/intake.cpp is compiled
-void Intake::telOP(bool intake, bool scoreTop, bool scoreMid, bool outtake, bool prime) {}
-
 // Controller
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
@@ -27,14 +21,6 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 pros::adi::DigitalOut piston1('A');
 pros::adi::DigitalOut piston2('B');
 pros::adi::DigitalOut piston3('C');
-
-// Globals needed by other files (if any)
-bool pRon = true;
-bool pYon = false;
-bool pL2on = false;
-bool pR_prev = false;
-bool pY_prev = false;
-bool pL2_prev = false;
 
 // Inertial Sensor
 pros::Imu imu(10);
@@ -75,20 +61,11 @@ lemlib::Chassis chassis(drivetrain, lateral_controller, angular_controller, sens
 
 
 // ============================================================================
-// LOGGING TASK (The Source of Truth)
+// LOGGING & DISPLAY TASKS
 // ============================================================================
 
 /**
  * @brief High-freq CSV logger for Telemetry analysis
- * 
- * Columns:
- * 1. TIME: Milliseconds since startup
- * 2. ODOM_X: LemLib's belief (Reference)
- * 3. ODOM_Y: LemLib's belief
- * 4. MCL_X: Particle Filter Mean (The Test Subject)
- * 5. MCL_Y: Particle Filter Mean
- * 6. SIGMA: Particle Variance in meters (Convergence metric)
- * 7. STATUS: SAFE (<0.1m var) or LOST
  */
 void mclLoggingTask() {
     // Header for CSV
@@ -118,6 +95,29 @@ void mclLoggingTask() {
     }
 }
 
+/**
+ * @brief Dashboard for the VEX Controller
+ */
+void controllerTask() {
+    while (true) {
+        if (mcl::g_mcl != nullptr) {
+            mcl::MCLPose p = mcl::g_mcl->getPose();
+            bool conv = mcl::g_mcl->isConverged();
+            
+            // Line 0: MCL Position
+            controller.print(0, 0, "MCL: %.1f %.1f", p.x(), p.y());
+            pros::delay(55); // Controller update limit
+            
+            // Line 1: Status + Variance
+            controller.print(1, 0, "%s V:%.2f", conv ? "LOCKED" : "SEARCH", mcl::g_mcl->getVariance());
+            pros::delay(55);
+        } else {
+            controller.print(0, 0, "MCL: INITIALIZING");
+            pros::delay(100);
+        }
+    }
+}
+
 // ============================================================================
 // SYSTEM LIFECYCLE
 // ============================================================================
@@ -130,19 +130,16 @@ void initialize() {
     chassis.calibrate();
 
     // 2. Initialize MCL
-    // This creates the particle filter logic but doesn't assume location yet
     mcl::initializeMCL(chassis, imu);
-    
-    // Optimization: Use 3-sensor mode
     mcl::g_mcl->useThreeSensorMode(true);
-    
-    // 3. Start Background Computation
     mcl::g_mcl->start();
+    
+    // 3. Set Initial State (Uniform for testing)
+    mcl::g_mcl->initializeUniform(); 
 
-    // 4. Set Initial Guess (Optional, assuming starting at 0,0,0 for testing)
-    // Uncomment actual start position for match
-    // mcl::g_mcl->initializeAtPose(0, 0, 0); 
-    mcl::g_mcl->initializeUniform(); // Use uniform for "Lost Robot" test
+    // 4. Start Persistent Tasks (Heap allocated to survive initialize)
+    new pros::Task(mclLoggingTask, "TelemetryLogger");
+    new pros::Task(controllerTask, "ControllerDash");
 
     pros::lcd::set_text(1, "READY - LOGGING ACTIVE");
 }
@@ -152,17 +149,17 @@ void competition_initialize() {}
 void autonomous() {}
 
 void opcontrol() {
-    // 1. Start Logging Task immediately
-    pros::Task logger(mclLoggingTask, "TelemetryLogger");
+    // Logic tasks are already running from initialize()!
+    // Just handle driving here.
 
     while (true) {
-        // Simple Arcade Drive for Testing
+        // Simple Arcade Drive
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         
         chassis.arcade(leftY, rightX);
         
-        // Control Pistons (Manual overrides for testing)
+        // Manual Piston Test (A Button)
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
             piston1.set_value(!piston1.get_value());
         }
