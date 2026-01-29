@@ -2,6 +2,7 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "localization/distance_localizer.h"
 #include "localization/sensor.h"
+#include "localization/mcl_task.h"  // Monte Carlo Localization integration
 #include "pros/misc.h"
 #include "pros/motors.h"
 #include "utils/intake.hpp"
@@ -213,6 +214,24 @@ void initialize() {
   pros::lcd::initialize();      // initialize brain screen
   set_score_piston_state(true); // ensure score piston starts engaged
   chassis.calibrate();          // calibrate sensors
+
+  // ============================================================
+  // MONTE CARLO LOCALIZATION (MCL) INITIALIZATION
+  // ============================================================
+  // Initialize the particle filter MCL system. This runs in a background
+  // task and continuously estimates robot position using distance sensors.
+  //
+  // MCL is READ-ONLY - it does NOT automatically modify chassis position.
+  // Query the MCL position via mcl::g_mcl->getPose() when needed.
+
+  mcl::initializeMCL(chassis, imu);    // Create MCL with chassis and IMU references
+
+  // Use 3-sensor mode (back, left, right) - front sensor often blocked by game elements
+  mcl::g_mcl->useThreeSensorMode(true);
+
+  // Start the MCL background task (runs at 50Hz)
+  mcl::g_mcl->start();
+
   // the default rate is 50. however, if you need to change the rate, you
   // can do the following.
   // lemlib::bufferedStdout().setRate(...);
@@ -230,6 +249,22 @@ void initialize() {
       pros::lcd::print(0, "X: %.2f in", pose.x);          // x
       pros::lcd::print(1, "Y: %.2f in", pose.y);          // y
       pros::lcd::print(2, "Theta: %.2f deg", pose.theta); // heading
+
+      // ============================================================
+      // MCL STATUS DISPLAY
+      // ============================================================
+      // Show MCL position estimate and drift from odometry on line 3
+      if (mcl::g_mcl != nullptr && mcl::g_mcl->isRunning()) {
+        auto mclPose = mcl::g_mcl->getPose();
+        // Calculate drift between MCL and odometry
+        float drift = sqrt(pow(mclPose.x() - pose.x, 2) +
+                          pow(mclPose.y() - pose.y, 2));
+        pros::lcd::print(3, "MCL:(%.1f,%.1f) D:%.1f %s",
+                        mclPose.x(), mclPose.y(), drift,
+                        mcl::g_mcl->isConverged() ? "OK" : "");
+      } else {
+        pros::lcd::print(3, "MCL: not running");
+      }
 
       const auto sensorSnapshot = distance_localization::sampleSensors();
       const auto printSensor =
@@ -358,7 +393,24 @@ void skills() {
   intake.telOP(true, false, false, false, false);
   // chassis.setPose(0, 0, 0);
 
+  // ============================================================
+  // SET INITIAL POSITION FOR BOTH ODOMETRY AND MCL
+  // ============================================================
+  // The robot starts at a known position. We set this for:
+  // 1. LemLib odometry (chassis.setPose)
+  // 2. MCL particle filter (mcl::g_mcl->initializeAtPose)
+  //
+  // After this, MCL runs autonomously and continuously tracks position.
+  // No manual resets needed - the particle filter handles it all.
+
   chassis.setPose(-49.920000, 15.120000, 85.236000);
+
+  // Initialize MCL particles at the same starting position
+  // This ensures MCL starts with accurate position knowledge
+  if (mcl::g_mcl != nullptr) {
+    mcl::g_mcl->initializeAtPose(-49.920000, 15.120000, 85.236000);
+    printf("[SKILLS] MCL initialized at starting pose\n");
+  }
 
   chassis.turnToHeading(90.0, 503);
   chassis.moveToPoint(-36.24, 15.12, 1245);
