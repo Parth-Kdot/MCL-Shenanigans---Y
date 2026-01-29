@@ -378,6 +378,7 @@ void MCLTask::updateLoop() {
             m_currentPose.y_meters = prediction.y();
             m_currentPose.theta_rad = prediction.z();
             m_currentVariance = calculateVariance();
+            if (m_currentVariance < 0.05f) m_currentVariance = 0.05f;
         }
 
         m_updateCount++;

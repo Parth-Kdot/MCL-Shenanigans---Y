@@ -115,11 +115,11 @@ struct MCLConfig {
 
     /// Linear noise factor (unitless, multiplied by distance traveled)
     /// Higher = more particle spread during movement
-    static constexpr float LINEAR_NOISE = 0.05f;
+    static constexpr float LINEAR_NOISE = 0.1f;
 
     /// Angular noise factor (unitless, multiplied by rotation amount)
     /// Higher = more heading uncertainty during turns
-    static constexpr float ANGULAR_NOISE = 0.03f;
+    static constexpr float ANGULAR_NOISE = 0.1f;
 
     // --------------------------------------------------------------------
     // CONVERGENCE DETECTION
