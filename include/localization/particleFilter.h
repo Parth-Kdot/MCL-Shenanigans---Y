@@ -116,7 +116,7 @@ public:
             avgMotion += dist;
         }
         avgMotion /= L;
-        distanceSinceUpdate += avgMotion * meter; // Assuming implicit conversion or adding double
+        distanceSinceUpdate += avgMotion * metre; // 'metre' is defined in units.hpp
 
         // Check if we should resample (Update Step)
         if (distanceSinceUpdate < maxDistanceSinceUpdate && 
