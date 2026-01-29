@@ -80,6 +80,7 @@
 #include "Eigen/Eigen"                    // Eigen for vector math
 
 #include <atomic>                         // Thread-safe flags
+#include <mutex>                          // std::lock_guard
 #include <optional>                       // Optional return values
 #include <functional>                     // std::function for callbacks
 
@@ -413,6 +414,7 @@ private:
     // --------------------------------------------------------------------
     pros::Task* m_task;              ///< Background task handle
     std::atomic<bool> m_running;     ///< Thread-safe running flag
+    mutable pros::Mutex m_stateMutex; ///< Mutex for thread safety
 
     // --------------------------------------------------------------------
     // STATE TRACKING
@@ -456,7 +458,7 @@ private:
      *
      * @return Function that returns Eigen::Vector2f motion delta
      */
-    std::function<Eigen::Vector2f()> createPredictionFunction();
+    std::function<void(Particle&)> createPredictionFunction();
 
     /**
      * @brief Calculate particle variance (spread)
@@ -503,6 +505,8 @@ extern MCLTask* g_mcl;
  *
  * @param chassis Reference to LemLib chassis
  * @param imu Reference to IMU sensor
+ *
+ * @note Now also initializes the random seed.
  */
 void initializeMCL(lemlib::Chassis& chassis, pros::Imu& imu);
 

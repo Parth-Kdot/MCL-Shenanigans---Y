@@ -1,6 +1,10 @@
 #pragma once
 
 #include "sensor.h"
+#include "config.h"
+#include <cmath>
+#include <algorithm>
+#include <optional>
 
 const std::vector<std::pair<Eigen::Vector2f, Eigen::Vector2f>> WALLS = {
 	{{1.78308, 1.78308}, {1.78308, -1.78308}},
@@ -20,10 +24,14 @@ private:
 	pros::Distance distance;
 
 	QLength measured = 0.0;
-	bool exit = false;
+	bool isMaxRange = false;
 	QLength std = 0.0;
 
 	double tuningConstant;
+
+    // Pre-computed max measurement to treat as "infinity"
+    const QLength MAX_VALID_RANGE = 2.5_m; 
+
 public:
 	Distance(Eigen::Vector3f sensor_offset, const double tuningConstant, pros::Distance distance)
 		: sensorOffset(std::move(sensor_offset)), tuningConstant(tuningConstant),
@@ -33,41 +41,67 @@ public:
 	void update() override {
 		const auto measuredMM = distance.get();
 
-		exit = measuredMM >= 9999; // || (distance.get_object_size() < 30);// || !distance.is_installed();
+		isMaxRange = (measuredMM >= 9999);
 
-		measured = tuningConstant * measuredMM * millimetre;
-
-		std = 0.2 * measured / sqrt(distance.get_confidence() / 64.0);
+        if (isMaxRange) {
+            measured = MAX_VALID_RANGE + 0.5_m; // Treat as 3.0m (outside field effectively)
+            std = 0.5_m; // High uncertainty but definitely "far"
+        } else {
+            measured = tuningConstant * measuredMM * millimetre;
+            // Adaptive noise model: error grows with distance
+		    std = 0.2 * measured / sqrt(std::max(1.0, (double)distance.get_confidence() / 64.0));
+        }
 	}
 
 	[[nodiscard]] std::optional<double> p(const Eigen::Vector3f& X) override {
+        // Optimisation: Pre-calculate trig
+        float angle = X.z() + sensorOffset.z();
+        float cos_a = std::cos(angle);
+        float sin_a = std::sin(angle);
 
-		if (exit) {
-			return std::nullopt;
-		}
+        // Vector composition manually to avoid Eigen overhead if critical, 
+        // but keeping Eigen for readability as per prompt instruction to focus on algo correctness.
+        // Actually, let's just do the offset rotation manually to be fast as requested.
+        float offset_x = sensorOffset.x();
+        float offset_y = sensorOffset.y();
+        float x_sensor = X.x() + (offset_x * std::cos(X.z()) - offset_y * std::sin(X.z()));
+        float y_sensor = X.y() + (offset_x * std::sin(X.z()) + offset_y * std::cos(X.z()));
 
-		auto angle = X.z() + sensorOffset.z();
+		auto predicted = 100.0f; // Start with a large value (meters)
 
-		Eigen::Vector2f x = X.head<2>() + Eigen::Rotation2Df(X.z()) * sensorOffset.head<2>();
+        // Wall 0 (+X): Defined by x = WALL_0_X. Ray intersects if cos_a > 0.
+        // Dist = (WallX - SensorX) / cos_a
+        if (cos_a > 1e-4f) {
+            float d = (WALL_0_X - x_sensor) / cos_a;
+            if (d >= 0) predicted = std::min(predicted, d);
+        }
 
-		auto predicted = 50.0f;
+        // Wall 1 (+Y): Defined by y = WALL_1_Y. Ray intersects if sin_a > 0.
+        // Dist = (WallY - SensorY) / sin_a
+        if (sin_a > 1e-4f) {
+            float d = (WALL_1_Y - y_sensor) / sin_a;
+            if (d >= 0) predicted = std::min(predicted, d);
+        }
 
-		if (const auto theta = abs(angleDifference(0_deg, angle).getValue()); theta < M_PI_2) {
-			predicted = std::min((WALL_0_X - x.x()) / cos(theta), predicted);
-		}
+        // Wall 2 (-X): Defined by x = WALL_2_X. Ray intersects if cos_a < 0.
+        // Dist = (SensorX - WallX) / (-cos_a)
+        if (cos_a < -1e-4f) {
+            float d = (x_sensor - WALL_2_X) / (-cos_a);
+            if (d >= 0) predicted = std::min(predicted, d);
+        }
 
-		if (const auto theta = abs(angleDifference(90_deg, angle).getValue()); theta < M_PI_2) {
-			predicted = std::min((WALL_1_Y - x.y()) / cos(theta), predicted);
-		}
+        // Wall 3 (-Y): Defined by y = WALL_3_Y. Ray intersects if sin_a < 0.
+        // Dist = (SensorY - WallY) / (-sin_a)
+        if (sin_a < -1e-4f) {
+            float d = (y_sensor - WALL_3_Y) / (-sin_a);
+            if (d >= 0) predicted = std::min(predicted, d);
+        }
 
-		if (const auto theta = abs(angleDifference(180_deg, angle).getValue()); theta < M_PI_2) {
-			predicted = std::min((x.x() - WALL_2_X) / cos(theta), predicted);
-		}
-
-		if (const auto theta = abs(angleDifference(270_deg, angle).getValue()); theta < M_PI_2) {
-			predicted = std::min((x.y() - WALL_3_Y) / cos(theta), predicted);
-		}
-
+        // If 'isMaxRange', measured is ~3.0m.
+        // If predicted is small (e.g. 0.5m), error is 2.5m -> low probability.
+        // If predicted is large (e.g. >2m), error is small -> high probability.
+        // This effectively punishes particles near walls when sensor sees nothing.
+        
 		return cheap_norm_pdf((predicted - measured.getValue())/std.getValue()) * LOCO_CONFIG::DISTANCE_WEIGHT;
 	}
 
