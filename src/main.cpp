@@ -22,6 +22,8 @@ pros::adi::DigitalOut piston1('A');
 pros::adi::DigitalOut piston2('B');
 pros::adi::DigitalOut piston3('C');
 
+bool pRon = false; // Toggle state for piston1
+
 // Inertial Sensor
 pros::Imu imu(10);
 
