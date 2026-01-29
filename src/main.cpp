@@ -148,7 +148,20 @@ void initialize() {
 
 void disabled() {}
 void competition_initialize() {}
-void autonomous() {}
+void autonomous() {
+    // ---------------------------------------------------------
+    // TEST ROUTINE: MOVE 5 INCHES FORWARD
+    // ---------------------------------------------------------
+    // Previous skills/auton routines are not present in this file version
+    // (overwritten by telemetry logger).
+    
+    // 1. Reset Position to 0,0,0
+    chassis.setPose(0, 0, 0);
+    
+    // 2. Move 5 inches forward (Y+)
+    // Timeout set to 2000ms to ensure completion
+    chassis.moveToPoint(0, 5, 2000);
+}
 
 void opcontrol() {
     // Logic tasks are already running from initialize()!
