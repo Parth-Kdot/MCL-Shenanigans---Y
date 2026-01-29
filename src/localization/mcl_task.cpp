@@ -388,12 +388,14 @@ void MCLTask::updateLoop() {
             bool converged = (m_updateCount >= MCLConfig::MIN_UPDATES_FOR_CONVERGENCE) &&
                              (m_currentVariance < MCLConfig::CONVERGENCE_THRESHOLD);
 
+            /* 
             printf("[MCL] Update #%lu: (%.2f, %.2f) var=%.4f %s\n",
                    static_cast<unsigned long>(m_updateCount),
                    m_currentPose.x(),
                    m_currentPose.y(),
                    m_currentVariance,
                    converged ? "CONVERGED" : "");
+            */
         }
 
         pros::delay(MCLConfig::UPDATE_INTERVAL_MS);
