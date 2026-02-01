@@ -286,13 +286,13 @@ void auton1() {
     chassis.waitUntilDone();
 
     // 4. Move to Match Load Ready Position
-    chassis.turnToHeading(120, 2000, {.maxSpeed = 300});
+    chassis.turnToHeading(120, 1300, {.maxSpeed = 300});
     chassis.waitUntilDone();
 
     chassis.moveToPoint(40.2556, 7, 2000, {.maxSpeed = 50});
     chassis.waitUntilDone();
 
-    chassis.turnToHeading(180, 2000, {.maxSpeed = 300});
+    chassis.turnToHeading(180, 1500, {.maxSpeed = 300});
     chassis.waitUntilDone();
 
     // open match loader
@@ -309,7 +309,7 @@ void auton1() {
     // We use .move_velocity() directly on them, removing the 'drivetrain->' pointer syntax.
     leftMotors.move_velocity(10);
     rightMotors.move_velocity(10);
-    pros::delay(2750);
+    pros::delay(2550);
     
     // Stop manual push
     leftMotors.move_velocity(0);
@@ -430,20 +430,29 @@ void skills() {
     chassis.turnToHeading(180, 2000, {.maxSpeed = 300});
     chassis.waitUntilDone();
 
+    chassis.moveToPose(42, 23, 180, 2000, {.forwards = false, .maxSpeed = 100});
+    chassis.waitUntilDone();
+
+    intake.telOP(false, true, false, false, false);
+
+    pros::delay(1500);
+
+    intake.telOP(true, false, false, false, false);
+
     // open match loader
     set_matchload_piston_state(true);
     pros::delay(500); // wait for piston to actuate
 
     // 6. Alignment / Interaction Phase
-    chassis.moveToPoint(40.2556, -7.11, 2000, {.maxSpeed = 85, .minSpeed = 80});
+    chassis.moveToPoint(40.2556, -7.11, 3500, {.maxSpeed = 85, .minSpeed = 80});
     chassis.waitUntilDone();
     //pros::delay(1750); // wait for any oscillations to settle
 
     // Manual slow push logic
     // Your provided code defines 'leftMotors' and 'rightMotors' as global MotorGroups.
     // We use .move_velocity() directly on them, removing the 'drivetrain->' pointer syntax.
-    leftMotors.move_velocity(15);
-    rightMotors.move_velocity(15);
+    leftMotors.move_velocity(10);
+    rightMotors.move_velocity(10);
     pros::delay(2750);
     
     // Stop manual push
@@ -468,13 +477,13 @@ pros::delay(2500);
     chassis.moveToPoint(19, -17.5, 1364); //node 33
 	pros::delay(50);
     chassis.turnToHeading(260, 834);
-    chassis.moveToPoint(16, -20, 1364); //node 33
+    chassis.moveToPoint(16, -21.5, 1364); //node 33
 	chassis.turnToHeading(270, 834);
     pros::delay(300);
-    chassis.moveToPoint(12, -20, 2300); //node 34
+    chassis.moveToPoint(12, -21.5, 2300); //node 34
 	set_matchload_piston_state(true);
     pros::delay(500); // wait for piston to actuate
-	chassis.moveToPoint(-10, -20, 1364, {.minSpeed = 450}); //node 33
+	chassis.moveToPoint(-11, -21.5, 1364, {.minSpeed = 450}); //node 33
     pros::delay(1500);
     set_matchload_piston_state(false);
 
@@ -605,6 +614,52 @@ pros::delay(2500);
 
 // //   chassis.turnToHeading(180, 800);
 }
+
+void auton2() {
+
+    intake.telOP(true, false, false, false, false);
+  // chassis.setPose(0, 0, 0);
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+
+  chassis.setPose(-49.920000, 15.120000, 90.000000);
+
+  chassis.turnToHeading(90.0, 503);
+  chassis.moveToPoint(-36.24, 15.12, 1145);
+  pros::delay(50);
+  chassis.turnToHeading(52.815294, 605);
+  chassis.moveToPoint(-22.32, 25.68, 1179);
+  pros::delay(50);
+  chassis.moveToPoint(-22.32, 22.68, 400);
+  chassis.turnToHeading(319.397752, 992);
+  chassis.moveToPoint(-4, -0.5, 1178, {.forwards = false});
+  set_score_piston_state(false);
+  pros::delay(1500);
+  intake.telOP(false, false, true, false, false);
+
+
+//   pros::delay(1000);
+  chassis.moveToPoint(-45.64, 45, 1741);
+ // chassis.waitUntil(11.144602);
+ middle_goal_score(false);
+  pros::delay(50);
+  chassis.turnToHeading(270, 969);
+  chassis.moveToPoint(-45.6, 44, 512);
+//   chassis.waitUntil(0.481858);
+
+  matchload_activate(true);
+  chassis.waitUntilDone();
+  intake.telOP(true, false, false, false, false);
+  pros::delay(300);
+  chassis.moveToPose(-58.5, 44, 270, 1720, {.maxSpeed = 50}, false); // node 6
+
+
+  //pros::delay(2000);
+  chassis.moveToPoint(-25, 46.32, 1836, {.forwards = false}); // node 7
+  matchload_activate(false);
+  intake.telOP(false, true, false, false, false);
+  
+}
+
 
 void autonomous() {
   auton1();
