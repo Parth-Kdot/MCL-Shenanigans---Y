@@ -1,14 +1,14 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
 // #include "localization/distance_localizer.h"
-#include "localization/sensor.h"
+//#include "localization/sensor.h"
 #include "pros/misc.h"
 #include "pros/motors.h"
-#include "pros/rtos.h"
+//#include "pros/rtos.h"
 #include "pros/rtos.hpp"
 #include "utils/intake.hpp"
 
-#include <limits>
+//#include <limits>
 
 bool pRon = true;
 bool pYon = false;
@@ -95,9 +95,6 @@ void Intake::telOP(bool intake, bool scoreTop, bool scoreMid, bool outtake,
     bottomMotor.move_velocity(600);
     topMotor.move_velocity(600);
   } else if (scoreTop) {
-    topMotor.move_velocity(-600);
-    bottomMotor.move_velocity(-600);
-    pros::delay(500); // run outtake for 1.5 seconds
     bottomMotor.move_velocity(600);
     topMotor.move_velocity(600);
   } else {
@@ -269,7 +266,7 @@ ASSET(example_txt); // '.' replaced with "_" to make c++ happy
  */
 
 
-void auton1() {
+void right_auton() {
 // 1. Setup Initial State
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
     chassis.setPose(0, 0, 0);
@@ -289,7 +286,7 @@ void auton1() {
     chassis.turnToHeading(120, 1300, {.maxSpeed = 300});
     chassis.waitUntilDone();
 
-    chassis.moveToPoint(40.2556, 7, 2000, {.maxSpeed = 50});
+    chassis.moveToPoint(41.5556, 11, 2000, {.maxSpeed = 50});
     chassis.waitUntilDone();
 
     chassis.turnToHeading(180, 1500, {.maxSpeed = 300});
@@ -300,7 +297,7 @@ void auton1() {
     pros::delay(500); // wait for piston to actuate
 
     // 6. Alignment / Interaction Phase
-    chassis.moveToPoint(40.2556, -7.11, 2000, {.maxSpeed = 85, .minSpeed = 80});
+    chassis.moveToPoint(41.5556, -5, 3200, {.maxSpeed = 30, .minSpeed = 35});
     chassis.waitUntilDone();
     //pros::delay(1750); // wait for any oscillations to settle
 
@@ -317,7 +314,7 @@ void auton1() {
 
     // 7. Back away and Final Intake
     // Move backwards (forwards = false)
-    chassis.moveToPose(42, 23, 180, 2000, {.forwards = false, .maxSpeed = 100});
+    chassis.moveToPose(42, 23, 180, 2000, {.forwards = false, .minSpeed = 70});
     chassis.waitUntilDone();
 
     intake.telOP(false, true, false, false, false);
@@ -615,7 +612,7 @@ pros::delay(2500);
 // //   chassis.turnToHeading(180, 800);
 }
 
-void auton2() {
+void left_auton() {
 
     intake.telOP(true, false, false, false, false);
   // chassis.setPose(0, 0, 0);
@@ -657,10 +654,20 @@ void auton2() {
   chassis.moveToPoint(-25, 46.32, 1836, {.forwards = false}); // node 7
   matchload_activate(false);
   intake.telOP(false, true, false, false, false);
+
+//   pros::delay(2000);
+//   tongue.set_value(false);
+//   chassis.moveToPoint(-36, 17, 1000, {.minSpeed = 60}, false);
+//   chassis.moveToPoint(-36, 40, 1000, {.forwards=false,.minSpeed = 200}, false);
   
 }
 
 
+void AWP_auton() {
+    //Solo AWP auton code here
+    
+}
+
 void autonomous() {
-  auton1();
+  right_auton();
 }
