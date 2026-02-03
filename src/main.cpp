@@ -664,9 +664,91 @@ void left_auton() {
 
 
 void AWP_auton() {
-    //Solo AWP auton code here
-    
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+    chassis.setPose(-51.624, -12.111, 180);
+
+
+    // Move in front of match loader   
+    chassis.moveToPoint(-47.285, -47.113, 1000, { .maxSpeed = 300 });
+    chassis.waitUntilDone();
+
+    chassis.turnToHeading(270.0, 500);  
+    chassis.waitUntilDone();
+
+    // Open match loader
+    set_matchload_piston_state(true);
+    pros::delay(500);
+
+    intake.telOP(true, false, false, false, false);
+
+    // Alignment / interaction phase with matchloader 
+    chassis.moveToPoint(-56.995, -47.113,3200,{ .maxSpeed = 30, .minSpeed = 35 });
+    chassis.waitUntilDone();
+
+
+    // Move backwards to score long goal
+    chassis.moveToPoint(-29.484, -47.113,1720,{ .forwards = false, .maxSpeed = 50 });
+    chassis.waitUntilDone();
+
+    intake.telOP(false, true, false, false, false);
+    pros::delay(1500);
+
+    chassis.moveToPoint(-37.845, -47.113,1720,{ .maxSpeed = 50 });
+    chassis.waitUntilDone();
+
+
+    // Move towards middle balls
+    intake.telOP(true, false, false, false, false);
+
+    chassis.turnToHeading(30, 1500, { .maxSpeed = 300 });
+    chassis.waitUntilDone();
+
+    chassis.moveToPoint(-24.36, -24.36, 1720, { .maxSpeed = 50 });
+    chassis.waitUntilDone();
+
+    chassis.turnToHeading(315, 1500, { .maxSpeed = 300 });
+    chassis.waitUntilDone();
+
+    // Score middle goal
+    chassis.moveToPoint(-10.335, 10.066, 1720, { .forwards = false, .maxSpeed = 50 });
+    chassis.waitUntilDone();
+  set_score_piston_state(false);
+  pros::delay(1500);
+  intake.telOP(false, false, true, false, false);
+
+
+    // Move towards LEFT match loaders
+    chassis.moveToPoint(
+        -48.364, 47.016,1720,{ .maxSpeed = 100 });
+    chassis.waitUntilDone();
+    chassis.turnToHeading(270, 1300, {.maxSpeed = 300});
+    chassis.waitUntilDone();
+    // Open match loader
+    set_matchload_piston_state(true);
+    pros::delay(500);
+
+    intake.telOP(true, false, false, false, false);
+
+    // Alignment / interaction phase with left matchloaders 
+    chassis.moveToPoint(
+        -56.995, 47.016,
+        3200,
+        { .maxSpeed = 30, .minSpeed = 35 }
+    );
+    chassis.waitUntilDone();
+
+    // Move backwards to score long goal
+    chassis.moveToPoint(
+        -29.484, 47.016,
+        1720,
+        { .forwards = false, .maxSpeed = 50 }
+    );
+    chassis.waitUntilDone();
+
+    intake.telOP(false, true, false, false, false);
+    pros::delay(1500);
 }
+
 
 void autonomous() {
   right_auton();
