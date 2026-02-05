@@ -94,13 +94,13 @@ void Intake::telOP(bool intake, bool scoreTop, bool scoreMid, bool outtake,
   } else if (scoreMid) {
     topMotor.move_velocity(-600);
     bottomMotor.move_velocity(-600);
-    pros::delay(500);
+    pros::delay(300);
     bottomMotor.move_velocity(600);
     topMotor.move_velocity(600);
   } else if (scoreTop) {
     topMotor.move_velocity(-600);
     bottomMotor.move_velocity(-600);
-    pros::delay(500);
+    pros::delay(300);
     bottomMotor.move_velocity(600);
     topMotor.move_velocity(600);
   } else {
@@ -159,7 +159,7 @@ lemlib::Drivetrain drivetrain(
     &rightMotors, // right motor group
     12,           // 10 inch track width
     lemlib::Omniwheel::NEW_325, 450,
-    2 // horizontal drift is 2. If we had traction wheels, it would have been 8
+    8 // horizontal drift is 2. If we had traction wheels, it would have been 8
 );
 
 lemlib::ControllerSettings
@@ -686,10 +686,10 @@ void AWP_auton() {
     intake.telOP(true, false, false, false, false);
 
     // Alignment / interaction phase with matchloader 
-    chassis.moveToPoint(-56.695, -54.350,2500,{ .maxSpeed = 80, .minSpeed = 55 });
+    chassis.moveToPoint(-57, -54.350,2500,{ .maxSpeed = 80, .minSpeed = 55 });
     // chassis.waitUntilDone();
     
-    pros::delay(1650);
+    pros::delay(1700);
 
 
     // Move backwards to score long goal
@@ -714,20 +714,21 @@ void AWP_auton() {
     intake.telOP(true, false, false, false, false);
 
     chassis.turnToHeading(20, 800, { .maxSpeed = 300 });
-    //chassis.waitUntilDone();
+    chassis.waitUntilDone();
     //pros::delay(150);
     //chassis.moveToPoint(-24.36, -24.36, 1800, { .maxSpeed = 100, .minSpeed = 30 });
     //chassis.waitUntilDone();
     pros::delay(150);
-    chassis.moveToPoint(-24.899, 22.36, 3200, { .maxSpeed = 100, .minSpeed = 30 });
-    //chassis.waitUntilDone();
-    pros::delay(150);
-    chassis.turnToHeading(315, 2100, { .maxSpeed = 90 });
-    //chassis.waitUntilDone();
-    pros::delay(150);
+    chassis.moveToPoint(-21.899, 25.36, 3200, { .maxSpeed = 100});
+    chassis.waitUntilDone();
+    pros::delay(150); 
+    chassis.turnToHeading(315, 1800);
+    chassis.waitUntilDone();
     // Score middle goal
-    chassis.moveToPoint(-13.953, 8.299, 2200, { .forwards = false, .maxSpeed = 20 }, false);
-    //chassis.waitUntilDone();
+    printf("X: %f, Y: %f, Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+    chassis.moveToPoint(-10.953, 11.299, 2000, { .forwards = false });
+    chassis.waitUntilDone();
+    printf("X: %f, Y: %f, Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
   set_score_piston_state(false);
   pros::delay(100);
   intake.telOP(false, false, true, false, false);
@@ -735,13 +736,13 @@ void AWP_auton() {
 
   intake.telOP(false, false, false, false, false);
 
-    // Move towards LEFT match loaders
+// Move towards LEFT match loaders
     chassis.moveToPoint(
-        -48.364, 44.0,2700,{ .maxSpeed = 100, .minSpeed = 20 });
+        -44.364, 43.0,2700,{ .maxSpeed = 100, .minSpeed = 20 });
         pros::delay(100);
     //chassis.waitUntilDone();
-    chassis.turnToHeading(270, 800, {.maxSpeed = 300});
-    //chassis.waitUntilDone();
+    chassis.turnToHeading(270, 1000, {.maxSpeed = 300});
+    chassis.waitUntilDone();
     // Open match loader
     set_matchload_piston_state(true);
     
@@ -752,16 +753,17 @@ void AWP_auton() {
 
     // Alignment / interaction phase with left matchloaders 
     chassis.moveToPoint(
-        -61.452, 45.813,
-        3000,
-        { .maxSpeed = 80, .minSpeed = 15 }
+        -57.5, 45,
+        2500,
+        { .maxSpeed = 80, .minSpeed = 55 }
     );
-    pros::delay(1200);
+    pros::delay(1700);
     //chassis.waitUntilDone();
 
     // Move backwards to score long goal
     chassis.moveToPoint(
-        -29.484, 45.516,
+        -29.484, 
+        45,
         1720,
         { .forwards = false, .maxSpeed = 80, .minSpeed = 40 }
     );
