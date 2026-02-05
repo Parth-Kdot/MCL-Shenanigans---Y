@@ -163,15 +163,15 @@ lemlib::Drivetrain drivetrain(
 );
 
 lemlib::ControllerSettings
-    lateral_controller(10, // proportional gain (kP)
+    lateral_controller(13, // proportional gain (kP)
                        0,  // integral gain (kI)
-                       5,  // derivative gain (kD)
+                       95,  // derivative gain (kD)
                        0,  // anti windup
-                       0,  // small error range, in inches
-                       0,  // small error range timeout, in milliseconds
-                       0,  // large error range, in inches
-                       0,  // large error range timeout, in milliseconds
-                       .5  // maximum acceleration (slew)
+                       1,  // small error range, in inches
+                       100,  // small error range timeout, in milliseconds
+                       3,  // large error range, in inches
+                       500,  // large error range timeout, in milliseconds
+                       1  // maximum acceleration (slew)
     );
 
 lemlib::ControllerSettings
@@ -179,10 +179,10 @@ lemlib::ControllerSettings
                        0,  // integral gain (kI)
                        18, // derivative gain (kD)
                        0,  // anti windup
-                       0,  // small error range, in inches
-                       0,  // small error range timeout, in milliseconds
-                       0,  // large error range, in inches
-                       0,  // large error range timeout, in milliseconds
+                       1,  // small error range, in inches
+                       100,  // small error range timeout, in milliseconds
+                       3,  // large error range, in inches
+                       500,  // large error range timeout, in milliseconds
                        0   // maximum acceleration (slew)
     );
 
@@ -675,31 +675,31 @@ void AWP_auton() {
 
 
     // Move in front of match loader   
-    chassis.moveToPoint(-44.000, -50.113, 2500, { .maxSpeed = 300});
+    chassis.moveToPoint(-44.000, -49.913, 2500, { .maxSpeed = 200, .minSpeed = 15});
 
-    chassis.turnToHeading(270.0, 1000);  
+    chassis.turnToHeading(270.0, 1000);
 
     // Open match loader
     set_matchload_piston_state(true);
-    pros::delay(100);
+    pros::delay(20);
 
     intake.telOP(true, false, false, false, false);
 
     // Alignment / interaction phase with matchloader 
-    chassis.moveToPoint(-57, -54.350,2500,{ .maxSpeed = 80, .minSpeed = 55 });
+    chassis.moveToPoint(-58.5, -53.950,3000,{ .maxSpeed = 70, .minSpeed = 25 });
     // chassis.waitUntilDone();
     
-    pros::delay(1700);
+    pros::delay(1400);
 
 
     // Move backwards to score long goal
-    chassis.moveToPoint(-29.484, -54.113,2200,{ .forwards = false, .maxSpeed = 50 });
+    chassis.moveToPoint(-25.484, -53.913,2200,{ .forwards = false, .maxSpeed = 80, .minSpeed = 30 });
     //chassis.waitUntilDone();
 
     pros::delay(800);
 
     intake.telOP(false, true, false, false, false);
-    pros::delay(1700);
+    pros::delay(1500);
 
     intake.telOP(false, false, false, false, false);
 
@@ -713,59 +713,62 @@ void AWP_auton() {
     // Move towards middle balls
     intake.telOP(true, false, false, false, false);
 
-    chassis.turnToHeading(20, 800, { .maxSpeed = 300 });
-    chassis.waitUntilDone();
+    chassis.turnToHeading(15, 800, { .maxSpeed = 300, .minSpeed = 40 });
+    //chassis.waitUntilDone();
     //pros::delay(150);
     //chassis.moveToPoint(-24.36, -24.36, 1800, { .maxSpeed = 100, .minSpeed = 30 });
     //chassis.waitUntilDone();
     pros::delay(150);
-    chassis.moveToPoint(-21.899, 25.36, 3200, { .maxSpeed = 100});
-    chassis.waitUntilDone();
-    pros::delay(150); 
-    chassis.turnToHeading(315, 1800);
-    chassis.waitUntilDone();
+    chassis.moveToPoint(-27.899, 26.16, 3200, { .maxSpeed = 100});
+    pros::delay(1600);
+    set_matchload_piston_state(true);
+   //chassis.waitUntilDone();
+    //pros::delay(150); 
+    chassis.turnToHeading(315, 1200, {.minSpeed = 30});
+    //chassis.waitUntilDone();
+    
     // Score middle goal
     printf("X: %f, Y: %f, Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-    chassis.moveToPoint(-10.953, 11.299, 2000, { .forwards = false });
-    chassis.waitUntilDone();
+    chassis.moveToPoint(-15.553, 11.899, 2000, { .forwards = false });
+    //chassis.waitUntilDone();
     printf("X: %f, Y: %f, Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-  set_score_piston_state(false);
+  
   pros::delay(100);
   intake.telOP(false, false, true, false, false);
-  pros::delay(1300);
-
+  pros::delay(1200);
+  set_score_piston_state(false);
   intake.telOP(false, false, false, false, false);
-
+  set_matchload_piston_state(false);
 // Move towards LEFT match loaders
     chassis.moveToPoint(
-        -44.364, 43.0,2700,{ .maxSpeed = 100, .minSpeed = 20 });
-        pros::delay(100);
+        -44.364, 44.5,2700,{ .maxSpeed = 100, .minSpeed = 20 });
+        //pros::delay(100);
     //chassis.waitUntilDone();
     chassis.turnToHeading(270, 1000, {.maxSpeed = 300});
-    chassis.waitUntilDone();
+    //chassis.waitUntilDone();
     // Open match loader
     set_matchload_piston_state(true);
     
 
     intake.telOP(true, false, false, false, false);
 
-    pros::delay(300);
+    //pros::delay(300);
 
     // Alignment / interaction phase with left matchloaders 
     chassis.moveToPoint(
-        -57.5, 45,
+        -67.8, 44.5,
         2500,
-        { .maxSpeed = 80, .minSpeed = 55 }
+        { .maxSpeed = 80, .minSpeed = 25 }
     );
-    pros::delay(1700);
+    pros::delay(1300);
     //chassis.waitUntilDone();
 
     // Move backwards to score long goal
     chassis.moveToPoint(
         -29.484, 
-        45,
+        47.8,
         1720,
-        { .forwards = false, .maxSpeed = 80, .minSpeed = 40 }
+        { .forwards = false, .maxSpeed = 90, .minSpeed = 40 }
     );
     //chassis.waitUntilDone();
 
@@ -774,6 +777,25 @@ void AWP_auton() {
     pros::delay(2500);
 }
 
+void lateral_tuning() {
+    // 1. Use HOLD so it behaves like it will in a match
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+    
+    // 2. Reset position
+    chassis.setPose(0, 0, 0);
+
+    // 3. Drive Forward 24 inches
+    chassis.moveToPoint(0, 24, 2000, {.maxSpeed = 100});
+    chassis.waitUntilDone();
+
+    // 4. WAIT! This 1 second delay is crucial.
+    // It lets you see if the robot "oscillates" (wiggles) after it stops.
+    pros::delay(3000);
+
+    // 5. Drive Backwards to Start 
+    chassis.moveToPoint(0, 0, 2000, {.forwards = false, .maxSpeed = 100});
+    chassis.waitUntilDone();
+}
 
 void autonomous() {
   AWP_auton();
