@@ -278,24 +278,24 @@ void right_auton() {
     chassis.setPose(0, 0, 0);
 
     // 2. Set Piston States
-    set_doinker_piston_state(true);
+    set_doinker_piston_state(false);
 
     // 3. Start Intake and Move to First Position
     // We access the global motor group directly
     intake.telOP(true, false, false, false, false);
 
     // Move to x: 10.174, y: 34.154, theta: 20.36
-    chassis.moveToPose(10.174, 34.154, 20.36, 2000, {.maxSpeed = 300});
+    chassis.moveToPose(10.174, 34.154, 20.36, 2000);
     chassis.waitUntilDone();
 
     // 4. Move to Match Load Ready Position
-    chassis.turnToHeading(120, 1300, {.maxSpeed = 300});
+    chassis.turnToHeading(120, 3300);
     chassis.waitUntilDone();
 
-    chassis.moveToPoint(41.5556, 11, 2000, {.maxSpeed = 50});
+    chassis.moveToPoint(40.5, 10, 3000);
     chassis.waitUntilDone();
 
-    chassis.turnToHeading(180, 1500, {.maxSpeed = 300});
+    chassis.turnToHeading(180, 3500);
     chassis.waitUntilDone();
 
     // open match loader
@@ -303,24 +303,12 @@ void right_auton() {
     pros::delay(500); // wait for piston to actuate
 
     // 6. Alignment / Interaction Phase
-    chassis.moveToPoint(41.5556, -5, 3200, {.maxSpeed = 30, .minSpeed = 35});
-    chassis.waitUntilDone();
+    chassis.moveToPoint(40.5, -7.11, 3500, {.maxSpeed = 70, .minSpeed = 25});
     //pros::delay(1750); // wait for any oscillations to settle
-
-    // Manual slow push logic
-    // Your provided code defines 'leftMotors' and 'rightMotors' as global MotorGroups.
-    // We use .move_velocity() directly on them, removing the 'drivetrain->' pointer syntax.
-    leftMotors.move_velocity(10);
-    rightMotors.move_velocity(10);
-    pros::delay(2550);
-    
-    // Stop manual push
-    leftMotors.move_velocity(0);
-    rightMotors.move_velocity(0);
 
     // 7. Back away and Final Intake
     // Move backwards (forwards = false)
-    chassis.moveToPose(42, 23, 180, 2000, {.forwards = false, .minSpeed = 70});
+    chassis.moveToPose(40.5, 25, 180, 3000, {.forwards = false});
     chassis.waitUntilDone();
 
     intake.telOP(false, true, false, false, false);
@@ -675,7 +663,7 @@ void AWP_auton() {
 
 
     // Move in front of match loader   
-    chassis.moveToPoint(-44.000, -49.913, 2500, { .maxSpeed = 200, .minSpeed = 15});
+    chassis.moveToPoint(-46.000, -49.913, 4500, { .maxSpeed = 200, .minSpeed = 15});
 
     chassis.turnToHeading(270.0, 1000);
 
@@ -686,19 +674,19 @@ void AWP_auton() {
     intake.telOP(true, false, false, false, false);
 
     // Alignment / interaction phase with matchloader 
-    chassis.moveToPoint(-58.5, -53.950,3000,{ .maxSpeed = 70, .minSpeed = 25 });
+    chassis.moveToPoint(-60, -51.913,4000,{ .maxSpeed = 70, .minSpeed = 25 });
     // chassis.waitUntilDone();
     
     pros::delay(1400);
 
 
     // Move backwards to score long goal
-    chassis.moveToPoint(-25.484, -53.913,2200,{ .forwards = false, .maxSpeed = 80, .minSpeed = 30 });
+    chassis.moveToPoint(-25.484, -51.913,2200,{ .forwards = false, .maxSpeed = 80, .minSpeed = 30 });
     //chassis.waitUntilDone();
 
     pros::delay(800);
 
-    intake.telOP(false, true, false, false, false);
+    intake.telOP(false,                                               true, false, false, false);
     pros::delay(1500);
 
     intake.telOP(false, false, false, false, false);
@@ -729,7 +717,7 @@ void AWP_auton() {
     
     // Score middle goal
     printf("X: %f, Y: %f, Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-    chassis.moveToPoint(-15.553, 11.899, 2000, { .forwards = false });
+    chassis.moveToPoint(-15, 11.399, 2000, { .forwards = false });
     //chassis.waitUntilDone();
     printf("X: %f, Y: %f, Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
   
@@ -756,8 +744,14 @@ void AWP_auton() {
 
     // Alignment / interaction phase with left matchloaders 
     chassis.moveToPoint(
-        -67.8, 44.5,
-        2500,
+        -66.8, 44.5,
+        600,
+        { .maxSpeed = 80, .minSpeed = 25 }
+    );
+    pros::delay(500);
+     chassis.moveToPoint(
+        -66.5, 46.5,
+        400,
         { .maxSpeed = 80, .minSpeed = 25 }
     );
     pros::delay(1300);
@@ -765,8 +759,8 @@ void AWP_auton() {
 
     // Move backwards to score long goal
     chassis.moveToPoint(
-        -29.484, 
-        47.8,
+        -30.484,  
+          44.8,
         1720,
         { .forwards = false, .maxSpeed = 90, .minSpeed = 40 }
     );
@@ -798,5 +792,45 @@ void lateral_tuning() {
 }
 
 void autonomous() {
-  AWP_auton();
+  right_auton();
+}
+
+// RISHIS AUTON PLAYING
+void rishi_right_auton_full() {
+  // set intital posititon (IN ABSOLUTE COORDS)
+  chassis.setPose(-44.316,-14.228,90);
+  // set motor mode
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+  // doinker up
+  set_doinker_piston_state(false);
+  // intake on
+  intake.telOP(true, false , false , false , false);
+
+  // **START MOVING**
+
+  // 1. Motion chained getting of middle goals, then to alignment point
+  chassis.moveToPose(-21.702, -21.837, 180, 5000, {.minSpeed=40, .earlyExitRange=2.5}); // middle blocks
+  chassis.moveToPose(-46.853, -47.199, 270, 5000); // match loader alignment point
+  chassis.waitUntilDone();
+
+  // 2. Go to match loader, and match load blocks
+  set_matchload_piston_state(true);
+  pros::delay(500);
+  chassis.moveToPoint(-68.199, -46.988, 5000);
+  pros::delay(1500);
+
+  // 3. Score everything into long goal
+  intake.telOP(false, true, false, false, false);
+  chassis.moveToPoint(-31.847, -47.199, 5000, {.forwards=false});
+  set_matchload_piston_state(false);
+  chassis.waitUntilDone();
+  pros::delay(1500);
+
+  // 4. Doinker everything into long control
+  intake.telOP(false, false ,false , false, false);
+  chassis.moveToPose(-46.853, -47.199, 270, 5000, {.forwards=false});
+  chassis.waitUntilDone();
+  set_doinker_piston_state(true);
+  chassis.moveToPose(-29.099, -56.922, 270, 5000, {.forwards=false});
+  chassis.moveToPoint(-12.614, -56.922, 5000, {.forwards=false, .maxSpeed=50});
 }
