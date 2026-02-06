@@ -809,14 +809,14 @@ void rishi_right_auton_full() {
   // **START MOVING**
 
   // 1. Motion chained getting of middle goals, then to alignment point
-  chassis.moveToPose(-21.702, -21.837, 180, 5000, {.minSpeed=40, .earlyExitRange=2.5}); // middle blocks
-  chassis.moveToPose(-46.853, -47.199, 270, 5000); // match loader alignment point
+  chassis.moveToPose(-21.702, -21.837, 145, 5000, {.minSpeed=40, .earlyExitRange=2.5}); // middle blocks
+  chassis.moveToPose(-46.853, -47.199, 270, 5000, {.lead=0.3}); // match loader alignment point
   chassis.waitUntilDone();
 
   // 2. Go to match loader, and match load blocks
   set_matchload_piston_state(true);
   pros::delay(500);
-  chassis.moveToPoint(-68.199, -46.988, 5000);
+  chassis.moveToPoint(-68.199, -46.988, 5000, { .maxSpeed = 70, .minSpeed = 25 });
   pros::delay(1500);
 
   // 3. Score everything into long goal
@@ -831,6 +831,51 @@ void rishi_right_auton_full() {
   chassis.moveToPose(-46.853, -47.199, 270, 5000, {.forwards=false});
   chassis.waitUntilDone();
   set_doinker_piston_state(true);
-  chassis.moveToPose(-29.099, -56.922, 270, 5000, {.forwards=false});
-  chassis.moveToPoint(-12.614, -56.922, 5000, {.forwards=false, .maxSpeed=50});
+  chassis.moveToPose(-29.099, -37.054, 270, 5000, {.forwards=false});
+  chassis.moveToPoint(-12.614, -37.054, 5000, {.forwards=false, .maxSpeed=50});
+}
+
+void rishi_left_auton_full() {
+  // set intital posititon (IN ABSOLUTE COORDS)
+  chassis.setPose(-44.105,14.516,90);
+  // set motor mode
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+  // doinker up
+  set_doinker_piston_state(false);
+  // intake on
+  intake.telOP(true, false , false , false , false);
+
+  // 1. Get middle blocks and middle alignment point + motion chain middle goal scoring point + score middle
+  chassis.moveToPose(-27.831, 28.042, 315, 5000, {.lead=1, .minSpeed=15, .earlyExitRange=2}); // gets middle blocks + middle alignment point
+  chassis.moveToPoint(-14.516, 14.727, 5000, {.forwards=false});
+  chassis.waitUntilDone();
+  intake.telOP(false, false, true, false ,false);
+  pros::delay(1500);
+  intake.telOP(false, false, false, false ,false);
+
+  // 2. Go to match loader alignment point
+  chassis.moveToPose(-48.121, 47.064, 270, 5000);
+  chassis.waitUntilDone();
+
+  // 3. Get match loads
+  intake.telOP(true, false, false, false ,false);
+  set_matchload_piston_state(true);
+  pros::delay(500);
+  chassis.moveToPoint(-60.802, 46.853, 5000, { .maxSpeed = 70, .minSpeed = 25 });
+  pros::delay(1500);
+
+  // 4. Score everything into long goal
+  chassis.moveToPoint(-31.635, 46.853, 5000, {.forwards=false});
+  chassis.waitUntilDone();
+  intake.telOP(false, true, false, false, false);
+  set_matchload_piston_state(false);
+  pros::delay(1500);
+
+  // 5. Doinker everything
+  intake.telOP(false, false ,false , false, false);
+  chassis.moveToPose(-48.121, 47.064, 270, 5000);
+  chassis.waitUntilDone();
+  set_doinker_piston_state(true);
+  chassis.moveToPose(-29.099, 57.632, 270, 5000, {.forwards=false});
+  chassis.moveToPoint(-12.614, 57.632, 5000, {.forwards=false, .maxSpeed=50});
 }
