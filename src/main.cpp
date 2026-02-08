@@ -223,6 +223,8 @@ void initialize() {
   pros::lcd::initialize();      // initialize brain screen
   set_score_piston_state(true); // ensure score piston starts engaged
   chassis.calibrate();          // calibrate sensors
+  set_doinker_piston_state(true);
+  //set_matchload_piston_state(true);
   // the default rate is 50. however, if you need to change the rate, you
   // can do the following.
   // lemlib::bufferedStdout().setRate(...);
@@ -277,9 +279,6 @@ void right_auton() {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
     chassis.setPose(0, 0, 0);
 
-    // 2. Set Piston States
-    set_doinker_piston_state(false);
-
     // 3. Start Intake and Move to First Position
     // We access the global motor group directly
     intake.telOP(true, false, false, false, false);
@@ -297,17 +296,17 @@ void right_auton() {
 
     chassis.waitUntilDone();
 
-    chassis.moveToPoint(39, 10, 4000);
+    chassis.moveToPoint(40, 10, 4000);
     chassis.waitUntilDone();
     
     set_matchload_piston_state(true);
 
-    chassis.turnToHeading(180, 4000);
+    chassis.turnToHeading(180, 1000);
     chassis.waitUntilDone();
 
     // 6. Alignment / Interaction Phase
     chassis.arcade(85, 0);
-    pros::delay(750);
+    pros::delay(1000);
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
     chassis.arcade(0,0);
     pros::delay(1000); // wait for any oscillations to settle
@@ -320,13 +319,13 @@ void right_auton() {
     intake.telOP(false, true, false, false, false);
     set_matchload_piston_state(false);
     set_doinker_piston_state(true);
-    pros::delay(2000);
+    pros::delay(1750);
 
     //8. Doinker everything in.
-    chassis.moveToPoint(28.4, 11.3, 3000);
+    chassis.moveToPoint(28.4, 11.3, 3000, {.minSpeed=30});
     chassis.turnToHeading(-180, 2000);
-    chassis.moveToPoint(29, 33.8, 2000, {.forwards=false});
-    chassis.moveToPoint(29, 47.4, 2000, {.forwards=false});
+    chassis.moveToPoint(28.4, 33.8, 2000, {.forwards=false, .minSpeed=30});
+    chassis.moveToPoint(28.4, 42.4, 2000, {.forwards=false});
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
 
 }
@@ -337,12 +336,7 @@ void right_auton() {
 * Runs in driver control
 */
 void opcontrol() {
-   pRon = true;
-   pYon = true;
-   pL2on = true;
-   pR_prev = true;
-   pY_prev = true;
-   pL2_prev = true;
+   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
    // controller
    // loop to continuously update motors
    while (true) {
@@ -396,6 +390,9 @@ void opcontrol() {
            piston3.set_value(pL2on);
        }
 
+       if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+          printf("X: %f, Y: %f, Theta: %f\n", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+       }
 
        // remember button state for next loop
        pR_prev = pR;
@@ -622,55 +619,49 @@ pros::delay(2500);
 // //   chassis.turnToHeading(180, 800);
 }
 
-// void left_auton() {
+void left_auton() {
+  // 1. Setup Initial State
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+  chassis.setPose(0, 0, 0);
+  intake.telOP(true, false, false, false, false);
 
-//     intake.telOP(true, false, false, false, false);
-//   // chassis.setPose(0, 0, 0);
-//   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+  // 2. Get middle blocks
+  chassis.moveToPose(-5.06, 26.89, -11.36, 2000);
+  chassis.waitUntil(10);
+  set_matchload_piston_state(true);
+  pros::delay(500);
+  set_matchload_piston_state(false);
+  chassis.waitUntilDone();
+  chassis.turnToHeading(-136.8, 1000);
+  chassis.waitUntilDone();
 
-//   chassis.setPose(-49.920000, 15.120000, 90.000000);
+  // 3. Score middle blocks
+  chassis.moveToPoint(9.25, 39, 2000, {.forwards = false, .earlyExitRange=2.5});
+  chassis.waitUntilDone();
+  intake.telOP(false, false, true, false, false);
+  pros::delay(1500);
+  intake.telOP(true, false, false, false, false);
 
-//   chassis.turnToHeading(90.0, 503);
-//   chassis.moveToPoint(-36.24, 15.12, 1145);
-//   pros::delay(50);
-//   chassis.turnToHeading(52.815294, 605);
-//   chassis.moveToPoint(-22.32, 25.68, 1179);
-//   pros::delay(50);
-//   chassis.moveToPoint(-22.32, 22.68, 400);
-//   chassis.turnToHeading(319.397752, 992);
-//   chassis.moveToPoint(-4, -0.5, 1178, {.forwards = false});
-//   set_score_piston_state(false);
-//   pros::delay(1500);
-//   intake.telOP(false, false, true, false, false);
+  // 4. Move towards left match loader
+  chassis.moveToPoint(-28, 10, 2000, {.maxSpeed=50});
+  chassis.waitUntilDone();
+  matchload_activate(true);
+  chassis.turnToHeading(-180, 1000);
+  chassis.waitUntilDone();
 
+  // 5. Interact with left match loader
+  chassis.arcade(85, 0);
+  pros::delay(1100);
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+  chassis.arcade(5,0);
+  pros::delay(750); // wait for any oscillations to settle
 
-// //   pros::delay(1000);
-//   chassis.moveToPoint(-45.64, 45, 1741);
-//  // chassis.waitUntil(11.144602);
-//  middle_goal_score(false);
-//   pros::delay(50);
-//   chassis.turnToHeading(270, 969);
-//   chassis.moveToPoint(-45.6, 44, 512);
-// //   chassis.waitUntil(0.481858);
-
-//   matchload_activate(true);
-//   chassis.waitUntilDone();
-//   intake.telOP(true, false, false, false, false);
-//   pros::delay(300);
-//   chassis.moveToPose(-58.5, 44, 270, 1720, {.maxSpeed = 50}, false); // node 6
-
-
-//   //pros::delay(2000);
-//   chassis.moveToPoint(-25, 46.32, 1836, {.forwards = false}); // node 7
-//   matchload_activate(false);
-//   intake.telOP(false, true, false, false, false);
-
-// //   pros::delay(2000);
-// //   tongue.set_value(false);
-// //   chassis.moveToPoint(-36, 17, 1000, {.minSpeed = 60}, false);
-// //   chassis.moveToPoint(-36, 40, 1000, {.forwards=false,.minSpeed = 200}, false);
-  
-// }
+  // 6. Score in long goal
+  chassis.moveToPoint(-27, 24.25, 2000, {.forwards = false, .earlyExitRange=2.5});
+  chassis.waitUntilDone();
+  intake.telOP(false, true, false, false, false);
+  pros::delay(1500);
+}
 
 
 void AWP_auton() {
@@ -803,6 +794,6 @@ void lateral_tuning() {
 }
 
 void autonomous() {
-  AWP_auton();
+ left_auton();
 }
 
