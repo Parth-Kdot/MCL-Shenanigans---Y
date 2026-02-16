@@ -492,87 +492,363 @@ void opcontrol() {
 //  SKILLS AUTONOMOUS ROUTINE
 // =============================================================
 void skills() {
-// 1. Setup Initial State
-    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
-    chassis.setPose(0, 0, 0);
 
-    // 2. Set Piston States
-    set_doinker_piston_state(true);
+        chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+// Set Initial Position
+    chassis.setPose(-46.477, 8.166, 90);
 
-    // 3. Start Intake and Move to First Position
-    // We access the global motor group directly
-    intake.telOP(true, false, false, false, false);
+//Run intake + matchload_piston
 
-    // Move to x: 10.174, y: 34.154, theta: 20.36
-    chassis.moveToPose(10.174, 34.154, 20.36, 2000, {.maxSpeed = 300});
-    chassis.waitUntilDone();
-
-    // 4. Move to Match Load Ready Position
-    chassis.turnToHeading(120, 2000, {.maxSpeed = 300});
-    chassis.waitUntilDone();
-
-    chassis.moveToPoint(40.2556, 7, 2000, {.maxSpeed = 50});
-    chassis.waitUntilDone();
-
-    chassis.turnToHeading(180, 2000, {.maxSpeed = 300});
-    chassis.waitUntilDone();
-
-    chassis.moveToPose(42, 23, 180, 2000, {.forwards = false, .maxSpeed = 100});
-    chassis.waitUntilDone();
-
-    intake.telOP(false, true, false, false, false);
-
-    pros::delay(1500);
-
-    intake.telOP(true, false, false, false, false);
-
-    // open match loader
-    set_matchload_piston_state(true);
-    pros::delay(500); // wait for piston to actuate
-
-    // 6. Alignment / Interaction Phase
-    chassis.moveToPoint(40.2556, -7.11, 3500, {.maxSpeed = 85, .minSpeed = 80});
-    chassis.waitUntilDone();
-    //pros::delay(1750); // wait for any oscillations to settle
-
-    // Manual slow push logic
-    // Your provided code defines 'leftMotors' and 'rightMotors' as global MotorGroups.
-    // We use .move_velocity() directly on them, removing the 'drivetrain->' pointer syntax.
-    leftMotors.move_velocity(10);
-    rightMotors.move_velocity(10);
-    pros::delay(2750);
+    chassis.turnToHeading(60.0, 900);  
     
-    // Stop manual push
-    leftMotors.move_velocity(0);
-    rightMotors.move_velocity(0);
 
-    // 7. Back away and Final Intake
-    // Move backwards (forwards = false)
-    chassis.moveToPose(42, 23, 180, 2000, {.forwards = false, .maxSpeed = 100});
-    chassis.waitUntilDone();
-
-    intake.telOP(false, true, false, false, false);
-
-set_matchload_piston_state(false);
-
-pros::delay(2500);
-	chassis.moveToPoint(42, 13, 1199); //node 31
-	pros::delay(50);
-	chassis.turnToHeading(230, 906);
-    chassis.moveToPoint(28,-12.5, 2006); //node 32
-	chassis.turnToHeading(250, 906);
-    chassis.moveToPoint(19, -17.5, 1364); //node 33
-	pros::delay(50);
-    chassis.turnToHeading(260, 834);
-    chassis.moveToPoint(16, -21.5, 1364); //node 33
-	chassis.turnToHeading(270, 834);
-    pros::delay(300);
-    chassis.moveToPoint(12, -21.5, 2300); //node 34
-	set_matchload_piston_state(true);
-    pros::delay(500); // wait for piston to actuate
-	chassis.moveToPoint(-11, -21.5, 1364, {.minSpeed = 450}); //node 33
+    intake.telOP(true, false, false, false, false);
     pros::delay(1500);
+
+    // Get Center Balls
+    chassis.moveToPoint(-21.757, 23.709, 1500, { .maxSpeed = 80}); 
+       pros::delay(900);
+
+//    set_matchload_piston_state(true);
+
+// Stop intake + raise Matchload_piston
+
+//    set_matchload_piston_state(false);
+
+    chassis.turnToHeading(320.0, 900);  
+    
+
+//Score Center Goal
+
+    chassis.moveToPoint(-14.186, 14.733, 1500, { .forwards = false, .maxSpeed = 50 });
+    pros::delay(900);
+
+    intake.telOP(false, false, true, false, false);
+    pros::delay(1300);
+
+    intake.telOP(false, false, false, false, false);
+
+//Line up X with matchloader
+    chassis.moveToPoint(-41.004, 46.526, 2000, {.maxSpeed = 50 });
+    
+
+    chassis.turnToHeading(270.0, 900);  
+    
+
+//Run intake + matchload_piston
+    intake.telOP(true, false, false, false, false);
+
+ set_matchload_piston_state(true);
+
+    pros::delay(50);
+
+//Matchloader interaction phase #1
+ chassis.moveToPoint(-58.517,46.477, 1000, {.maxSpeed = 50 });    
+pros::delay(2000);
+
+
+// Stop intake + raise Matchload_piston
+    intake.telOP(false, false, false, false, false);
+    pros::delay(1500);
+
     set_matchload_piston_state(false);
+
+//Move Back
+    chassis.moveToPoint(-50.636,46.477, 1000, {.forwards = false,.minSpeed = 15});   
+    chassis.turnToHeading(34.8, 900);  
+    
+//Motion Chaining
+// ADD 4 POINTS
+
+    chassis.moveToPose(-46.492,52.325, 56.1, 1500, {.minSpeed = 60 });
+    
+    chassis.moveToPose(-40.238,56.613, 74.5, 1500, {.minSpeed = 60 });
+
+    chassis.moveToPose(-31.758,56.946, 90, 1500, {.minSpeed = 60});
+
+    chassis.moveToPose(-22.333,57.895, 90, 1500, {.minSpeed = 60});
+    
+    chassis.moveToPoint(45.689,58.189, 4500, {.minSpeed = 60});
+
+//Make all 4 Wall Reset impact Y
+
+// First Wall Reset
+resetToDistance(648, false);
+
+        chassis.turnToHeading(90.0, 900);  
+
+    chassis.moveToPoint(45.689,46.477, 1200, {.minSpeed = 60});
+
+// Run intake
+    intake.telOP(true, false, false, false, false);
+
+   set_matchload_piston_state(true);
+    pros::delay(50);
+
+
+//Matchloader interaction phase #2
+    chassis.moveToPoint(61.013,46.477, 1200, {.maxSpeed = 60});
+    
+pros::delay(2000);
+
+//Score balls into left long goal
+
+   chassis.moveToPoint(27.737,46.696, 2500, {.forwards=false, .maxSpeed = 60,});
+   set_matchload_piston_state(false);
+    pros::delay(750);
+   intake.telOP(false, true, false, false, false);
+    pros::delay(3000);
+   intake.telOP(false, false, false, false, false);
+
+    chassis.moveToPoint(38.245,46.696, 1200, {.maxSpeed = 60});
+   
+   chassis.turnToHeading(140, 900);  
+    
+
+//Line up with blue parking (make a curve so it can intake all balls!!!) 
+
+    chassis.moveToPose(41.718,40.543, 130, 1800, {.minSpeed = 60});
+    chassis.moveToPose(51.428,33.26,140, 1800, {.minSpeed = 60});
+
+
+    
+
+   chassis.turnToHeading(180, 900);  
+    
+
+//Cross Over Blue Parking 
+   intake.telOP(true, false, false, false, false);
+    chassis.moveToPoint(61.013,-25.548, 4000);
+    
+
+
+// Second Wall Reset
+resetToDistance(1180, true);
+
+
+   chassis.turnToHeading(270, 900);  
+    
+
+//Run Intake
+   intake.telOP(true, false, false, false, false);
+    pros::delay(1500);
+
+//Get Center Balls
+    chassis.moveToPoint(23.724,-22.203, 1500, {.maxSpeed = 80});
+
+//    set_matchload_piston_state(true);
+    
+//    pros::delay(50);
+//    set_matchload_piston_state(false);
+
+// Score on Center Goal
+
+    chassis.turnToHeading(310, 900 );
+    chassis.moveToPoint(11.143,-11.143, 1500, {.forwards = false, .maxSpeed = 60});
+    pros::delay(900);
+
+   intake.telOP(false, false, true, false, false);
+    pros::delay(1500);
+
+   intake.telOP(false, false, false, false, false);
+
+// Resume Back to normal track
+    chassis.moveToPoint(54.446,-47.002, 1500, {.forwards = false, .maxSpeed = 60});
+//    pros::delay(900);
+
+
+// Third Wall Reset
+chassis.turnToHeading(180,900);
+resetToDistance(635, true);
+ 
+
+// Line up X with matchloader
+
+   chassis.turnToHeading(90, 900);  
+
+// Start intake and lower matchload_piston
+
+   intake.telOP(true, false, false, false, false);
+
+   set_matchload_piston_state(true);
+   pros::delay(50);
+//Matchloader interaction phase #3
+    chassis.moveToPoint(61.013,-46.477, 1000, {.maxSpeed = 60});
+    
+pros::delay(2000);
+
+// raise Matchload_piston
+
+    chassis.moveToPoint(49.848,-47.002, 1200, {.maxSpeed = 60});
+
+
+
+   chassis.turnToHeading(220, 900);  
+    
+
+// Motion Chaining 
+// ADD 4 POINTS
+   chassis.moveToPose(46.418,-52.304,236.5, 1500, {.minSpeed = 60});
+
+   chassis.moveToPose(46.695,-51.665,230.2, 1500, {.minSpeed = 60});
+
+   chassis.moveToPose(42.624,-54.883,244.7, 1500, {.minSpeed = 60});
+
+   chassis.moveToPose(37.391,-58.062,252, 1500, {.minSpeed = 60});
+
+    chassis.moveToPose(31.881,-59.531, 270, 1500, {.minSpeed = 60});
+    
+
+// Move to our side of field
+    chassis.moveToPoint(-40.347,-58.824, 5000, {.maxSpeed = 60});
+    
+
+  chassis.turnToHeading(220, 900);  
+    
+
+//Align X with matchloader
+    chassis.moveToPoint(-40.347,-47.002, 1200, {.maxSpeed = 60});
+    
+
+// Fourth Wall Reset
+
+resetToDistance(804, false);
+
+chassis.turnToHeading(270, 900); 
+
+//Score in Right Long Goal 
+   chassis.moveToPoint(-26.876,-47.089, 2500, {.forwards = false, .maxSpeed = 60});
+
+pros::delay(500);
+
+   intake.telOP(false, true, false, false, false);
+    pros::delay(1500);
+
+// Start intake and lower matchload_piston
+   intake.telOP(true, false, false, false, false);
+   set_matchload_piston_state(true);
+ 
+pros::delay(50); 
+//Matchloader interaction phase #4
+   chassis.moveToPoint(-64.428,-46.564, 1200);
+    
+pros::delay(2000);
+
+//Score in Right Long Goal 
+   chassis.moveToPoint(-26.876,-47.089, 2500, {.forwards = false, .maxSpeed = 60});
+
+
+// raise Matchload_piston
+ set_matchload_piston_state(false);
+
+   intake.telOP(false, true, false, false, false);
+    pros::delay(1500);
+
+   intake.telOP(false, false, false, false, false);
+
+
+// Move back
+  chassis.moveToPoint(-35.31,-46.951, 1000, {.maxSpeed = 60});
+    
+
+ chassis.turnToHeading(310, 900);  
+    
+
+
+//Motion Chaining
+// ADD MORE POINTS
+   chassis.moveToPose(-45.394,-41.417,311.5, 1500, {.minSpeed = 60});
+  chassis.moveToPose(-51.316,-36.139, 325, 1500, {.minSpeed = 60});
+  chassis.moveToPose(-55.763,-29.405, 337.5, 1500, {.minSpeed = 60});
+    chassis.moveToPose(-58.674,-21.097, 350, 1500, {.minSpeed = 60});
+ chassis.moveToPose(-60.824,-13.321, 356.5, 1500, {.minSpeed = 60});
+
+//Enter into Parking
+
+  chassis.moveToPoint(-61.301,0.055, 2000, {.maxSpeed = 60});
+
+
+// // 1. Setup Initial State
+//     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+//     chassis.setPose(0, 0, 0);
+
+//     // 2. Set Piston States
+//     set_doinker_piston_state(true);
+
+//     // 3. Start Intake and Move to First Position
+//     // We access the global motor group directly
+//     intake.telOP(true, false, false, false, false);
+
+//     // Move to x: 10.174, y: 34.154, theta: 20.36
+//     chassis.moveToPose(10.174, 34.154, 20.36, 2000, {.maxSpeed = 300});
+//     chassis.waitUntilDone();
+
+//     // 4. Move to Match Load Ready Position
+//     chassis.turnToHeading(120, 2000, {.maxSpeed = 300});
+//     chassis.waitUntilDone();
+
+//     chassis.moveToPoint(40.2556, 7, 2000, {.maxSpeed = 50});
+//     chassis.waitUntilDone();
+
+//     chassis.turnToHeading(180, 2000, {.maxSpeed = 300});
+//     chassis.waitUntilDone();
+
+//     chassis.moveToPose(42, 23, 180, 2000, {.forwards = false, .maxSpeed = 100});
+//     chassis.waitUntilDone();
+
+//     intake.telOP(false, true, false, false, false);
+
+//     pros::delay(1500);
+
+//     intake.telOP(true, false, false, false, false);
+
+//     // open match loader
+//     set_matchload_piston_state(true);
+//     pros::delay(500); // wait for piston to actuate
+
+//     // 6. Alignment / Interaction Phase
+//     chassis.moveToPoint(40.2556, -7.11, 3500, {.maxSpeed = 85, .minSpeed = 80});
+//     chassis.waitUntilDone();
+//     //pros::delay(1750); // wait for any oscillations to settle
+
+//     // Manual slow push logic
+//     // Your provided code defines 'leftMotors' and 'rightMotors' as global MotorGroups.
+//     // We use .move_velocity() directly on them, removing the 'drivetrain->' pointer syntax.
+//     leftMotors.move_velocity(10);
+//     rightMotors.move_velocity(10);
+//     pros::delay(2750);
+    
+//     // Stop manual push
+//     leftMotors.move_velocity(0);
+//     rightMotors.move_velocity(0);
+
+//     // 7. Back away and Final Intake
+//     // Move backwards (forwards = false)
+//     chassis.moveToPose(42, 23, 180, 2000, {.forwards = false, .maxSpeed = 100});
+//     chassis.waitUntilDone();
+
+//     intake.telOP(false, true, false, false, false);
+
+// set_matchload_piston_state(false);
+
+// pros::delay(2500);
+// 	chassis.moveToPoint(42, 13, 1199); //node 31
+// 	pros::delay(50);
+// 	chassis.turnToHeading(230, 906);
+//     chassis.moveToPoint(28,-12.5, 2006); //node 32
+// 	chassis.turnToHeading(250, 906);
+//     chassis.moveToPoint(19, -17.5, 1364); //node 33
+// 	pros::delay(50);
+//     chassis.turnToHeading(260, 834);
+//     chassis.moveToPoint(16, -21.5, 1364); //node 33
+// 	chassis.turnToHeading(270, 834);
+//     pros::delay(300);
+//     chassis.moveToPoint(12, -21.5, 2300); //node 34
+// 	set_matchload_piston_state(true);
+//     pros::delay(500); // wait for piston to actuate
+// 	chassis.moveToPoint(-11, -21.5, 1364, {.minSpeed = 450}); //node 33
+//     pros::delay(1500);
+//     set_matchload_piston_state(false);
 
 
 
