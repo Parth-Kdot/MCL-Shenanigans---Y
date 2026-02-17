@@ -503,7 +503,7 @@ void skills() {
     
 
     intake.telOP(true, false, false, false, false);
-    pros::delay(1500);
+//    pros::delay(1500);
 
     // Get Center Balls
     chassis.moveToPoint(-21.757, 23.709, 1500, { .maxSpeed = 80}); 
@@ -520,7 +520,7 @@ void skills() {
 
 //Score Center Goal
 
-    chassis.moveToPoint(-14.186, 14.733, 1500, { .forwards = false, .maxSpeed = 50 });
+    chassis.moveToPoint(-11.186, 8.733, 2500, { .forwards = false, .maxSpeed = 50 });
     pros::delay(900);
 
     intake.telOP(false, false, true, false, false);
@@ -1153,9 +1153,10 @@ void lateral_tuning() {
 }
 
 void autonomous() {
-  if (use_right_auton) {
-    right_auton();
-  } else {
-    left_auton();
-  }
+//  if (use_right_auton) {
+  //  right_auton();
+  //} else {
+   // left_auton();
+ // }
+ skills();
 }
