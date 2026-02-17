@@ -161,7 +161,7 @@ void Intake::telOP(bool intake, bool scoreTop, bool scoreMid, bool outtake,
   } else if (intake) {
     bottomMotor.move_velocity(600);
     topMotor.move_velocity(0);
-    set_score_piston_state(true);
+    set_score_piston_state(false);
   } else if (scoreMid) {
     topMotor.move_velocity(-600);
     bottomMotor.move_velocity(-600);
@@ -169,11 +169,13 @@ void Intake::telOP(bool intake, bool scoreTop, bool scoreMid, bool outtake,
     bottomMotor.move_velocity(600);
     topMotor.move_velocity(600);
   } else if (scoreTop) {
+    set_score_piston_state(false);
     topMotor.move_velocity(-600);
     bottomMotor.move_velocity(-600);
     pros::delay(150);
     bottomMotor.move_velocity(600);
     topMotor.move_velocity(600);
+    set_score_piston_state(false);
   } else {
     bottomMotor.move_velocity(0);
     topMotor.move_velocity(0);
@@ -363,11 +365,11 @@ void right_auton() {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
     chassis.setPose(0, 0, 0);
 
-  
+  set_score_piston_state(false);
     // 3. Start Intake and Move to First Position
     // We access the global motor group directly
     intake.telOP(true, false, false, false, false);
-  set_score_piston_state(true);
+  set_score_piston_state(false);
     // Move to x: 10.174, y: 34.154, theta: 20.36
     chassis.moveToPose(10.174, 34.154, 20.36, 2000);
 //    chassis.waitUntil(12.5);
@@ -390,7 +392,7 @@ pros::delay(1000);
     chassis.turnToHeading(180, 1000);
 //    chassis.waitUntilDone();
 chassis.moveToPoint(40,-11.5, 3000);
-pros::delay(1400);
+pros::delay(100);
       // 6. Alignment / Interaction Phase
 //      chassis.arcade(85, 0);
   //    pros::delay(1000);
@@ -400,19 +402,21 @@ pros::delay(1400);
 
     // 7. Back away and Final Intake
     // Move backwards (forwards = false)
-    chassis.moveToPoint(39, 25, 3000, {.forwards = false, .earlyExitRange=2});
+    chassis.moveToPoint(39, 24, 3000, {.forwards = false, .maxSpeed = 100});
 //    chassis.waitUntilDone();
 pros::delay(1000);
+    set_score_piston_state(false);      
     intake.telOP(false, true, false, false, false);
+    set_score_piston_state(false);
     set_matchload_piston_state(false);
     set_doinker_piston_state(true);
     pros::delay(1750);
 
     //8. Doinker everything in.
-    chassis.moveToPoint(28.4, 11.3, 3000, {.minSpeed=30});
+    chassis.moveToPoint(30.4, 11.3, 3000, {.minSpeed=30});
     chassis.turnToHeading(-180, 2000);
-    chassis.moveToPoint(28.4, 33.8, 2000, {.forwards=false, .minSpeed=30});
-    chassis.moveToPoint(28.4, 42.4, 2000, {.forwards=false});
+    chassis.moveToPoint(30.4, 33.8, 2000, {.forwards=false, .minSpeed=30});
+    chassis.moveToPoint(30.4, 42.4, 2000, {.forwards=false});
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
 
 }
@@ -999,7 +1003,7 @@ void left_auton() {
   chassis.waitUntilDone();
 
   // 3. Score middle blocks
-  chassis.moveToPoint(9.25, 39, 2000, {.forwards = false, .earlyExitRange=2.5});
+  chassis.moveToPoint(10.75, 37.5, 2000, {.forwards = false, .earlyExitRange=2.5});
   chassis.waitUntilDone();
   intake.telOP(false, false, true, false, false);
   pros::delay(1500);
@@ -1020,9 +1024,12 @@ void left_auton() {
   pros::delay(750); // wait for any oscillations to settle
 
   // 6. Score in long goal
+    set_score_piston_state(false);
   chassis.moveToPoint(-27, 24.25, 2000, {.forwards = false, .earlyExitRange=2.5});
   chassis.waitUntilDone();
+  set_score_piston_state(false);
   intake.telOP(false, true, false, false, false);
+  set_score_piston_state(false);
   pros::delay(1500);
 }
 
@@ -1156,11 +1163,19 @@ void lateral_tuning() {
     chassis.waitUntilDone();
 }
 
+void scorepistoncheck() {
+    set_score_piston_state(true);
+    pros::delay(2000);
+    set_score_piston_state(false);
+    pros::delay(2000);
+    set_score_piston_state(true);
+}
+
 void autonomous() {
 //  if (use_right_auton) {
   //  right_auton();
   //} else {
    // left_auton();
  // }
- right_auton();
+ left_auton();
 }
