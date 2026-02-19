@@ -11,6 +11,8 @@
 //#include <limits>
 
 
+// this needs to be put outside a function
+ASSET(example_txt); // '.' replaced with "_" to make c++ happy
 
 bool pRon = true;
 bool pYon = false;
@@ -349,8 +351,7 @@ void disabled() {
 void competition_initialize() {}
 
 // get a path used for pure pursuit
-// this needs to be put outside a function
-ASSET(example_txt); // '.' replaced with "_" to make c++ happy
+
 
 /**
  * Runs during auto
