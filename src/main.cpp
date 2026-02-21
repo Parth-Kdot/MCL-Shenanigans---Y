@@ -26,6 +26,18 @@ bool pL2_prev = false;
 bool use_right_auton = true;
 bool auton_btn_prev = false;
 
+//global variables for auton selector 
+int auton = 0;
+bool auton_prev = false;
+bool auton_locked= false; 
+const char* auton_names[] = {
+    "Left Auton",
+    "Right Auton",
+    "AWP Auton",
+    "Skills"
+};
+
+const int AUTON_COUNT = 4; 
 extern pros::MotorGroup bottom_intake;
 extern pros::MotorGroup top_intake;
 extern pros::adi::DigitalOut piston1;
@@ -87,7 +99,7 @@ pros::MotorGroup leftMotors(
     {-8, -9, 4},
     pros::MotorGearset::blue); // right motor group - ports 6, 7, 9 (reversed)
 
-pros::MotorGroup bottom_intake({-12}, pros::MotorGearset::blue);
+pros::MotorGroup bottom_intake({-19}, pros::MotorGearset::blue);
 
 pros::MotorGroup top_intake({2}, pros::MotorGearset::blue);
 
@@ -317,7 +329,7 @@ void initialize() {
             pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
             pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
             pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-            controller.print(0, 0, "Intake Temp: %f", pros::c::motor_get_temperature(1)); // x            // log position telemetry
+            pros::lcd::print(3, "CODE UPLOADED"); // heading
             //controller.print(1, 0, "Auton: %d", autonselected);
             lemlib::telemetrySink()->info("Chassis pose: {}", chassis.getPose());
             // delay to save resources
@@ -330,19 +342,45 @@ void initialize() {
  * Runs while the robot is disabled
  */
 void disabled() {
-  while (true) {
-    bool auton_btn = auton_selector.get_value();
-    // Toggle on rising edge (button press)
-    if (auton_btn && !auton_btn_prev) {
-      use_right_auton = !use_right_auton;
+    int hold_time = 0;
+
+    while (true) {
+        bool pressed = auton_selector.get_value();
+
+        if (pressed) {
+            hold_time += 100;
+        } else {
+            hold_time = 0;
+        }
+
+        // -------- UNLOCK --------
+        if (auton_locked && hold_time >= 2000) {
+            auton_locked = false;
+            hold_time = 0;
+        }
+
+        // -------- LOCK --------
+        else if (!auton_locked && hold_time >= 2000) {
+            auton_locked = true;
+            hold_time = 0;
+        }
+
+        // -------- CYCLE --------
+        else if (!auton_locked && pressed && !auton_prev) {
+            auton++;
+            if (auton >= AUTON_COUNT) auton = 0;
+        }
+        //Display auton_selector 
+        pros::lcd::clear_line(5);
+
+        if (auton_locked) {
+            pros::lcd::print(5, "LOCKED: %s", auton_names[auton]);
+        } else {
+            pros::lcd::print(5, "Auton: %s", auton_names[auton]);
+        }
+        auton_prev = pressed;
+        pros::delay(100);
     }
-    auton_btn_prev = auton_btn;
-
-    // Show current selection on brain screen
-    pros::lcd::print(5, "Auton: %s", use_right_auton ? "RIGHT" : "LEFT");
-
-    pros::delay(20);
-  }
 }
 
 /**
@@ -575,10 +613,10 @@ void skills() {
     //    pros::delay(1500);
     
     // Get Center Balls
-    chassis.moveToPoint(-15.257, 12.209, 1500, { .maxSpeed = 80}); 
-    pros::delay(700);
+    chassis.moveToPoint(-17.257, 10.209, 1500, { .maxSpeed = 80}); 
+    pros::delay(800);
     set_matchload_piston_state(true);
-    pros::delay(450);
+    pros::delay(550);
     set_matchload_piston_state(false);
     
     
@@ -596,15 +634,14 @@ void skills() {
 
 //Score Center Goal
 
-    chassis.moveToPoint(-9.686, -3.733, 2500, { .forwards = false, .maxSpeed = 50 });
+    chassis.moveToPoint(-7.686, -5.733, 2500, { .forwards = false, .maxSpeed = 50 });
     pros::delay(900);
     intake.telOP(false, false, true, false, false);
     pros::delay(1500);
-
     intake.telOP(false, false, false, false, false);
 
 //Line up X with matchloader
-    chassis.moveToPoint(-41.004, 30.526, 2000, {.maxSpeed = 50 });
+    chassis.moveToPoint(-36.004, 30.526, 2000, {.maxSpeed = 50 });
     
 
     chassis.turnToHeading(270.0, 900);  
@@ -1250,10 +1287,18 @@ void scorepistoncheck() {
 }
 
 void autonomous() {
-//  if (use_right_auton) {
-  //  right_auton();
-  //} else {
-   // left_auton();
- // }
-skills(); 
+switch (auton) {
+        case 0:
+            left_auton();
+            break;
+        case 1:
+            right_auton();
+            break;
+        case 2:
+            AWP_auton();
+            break;
+        case 3:
+            skills();
+            break;
+    }
 }
