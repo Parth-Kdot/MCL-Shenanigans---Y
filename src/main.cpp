@@ -408,7 +408,7 @@ void leftside_doinker_auton() {
   chassis.turnToHeading(180, 1000);
   //    chassis.waitUntilDone();
   chassis.moveToPoint(-27.5, -9.25, 3000);
-  pros::delay(100);
+  pros::delay(1100);
   // 6. Alignment / Interaction Phase
   //      chassis.arcade(85, 0);
   //    pros::delay(1000);
@@ -418,9 +418,9 @@ void leftside_doinker_auton() {
 
   // 7. Back away and Final Intake
   // Move backwards (forwards = false)
-  chassis.moveToPoint(-27.5, 24, 3000, {.forwards = false, .maxSpeed = 100});
+  chassis.moveToPoint(-28.5, 24, 3000, {.forwards = false, .maxSpeed = 100});
   //    chassis.waitUntilDone();
-  pros::delay(1000);
+  pros::delay(1200);
 //  set_score_piston_state(false);
   intake.telOP(false, true, false, false, false);
 //  set_score_piston_state(false);
@@ -429,10 +429,10 @@ void leftside_doinker_auton() {
   pros::delay(1750);
 
   // 8. Doinker everything in.
-  chassis.moveToPoint(-37.4, 11.3, 3000, {.minSpeed = 30});
+  chassis.moveToPoint(-37, 11.3, 3000, {.minSpeed = 30});
   chassis.turnToHeading(180, 1000, {.minSpeed = 30});
-  chassis.moveToPoint(-37.4, 33.8, 2000, {.forwards = false, .minSpeed = 30});
-  chassis.moveToPoint(-37.4, 42.4, 2000, {.forwards = false});
+  chassis.moveToPoint(-37, 33.8, 2000, {.forwards = false, .minSpeed = 30});
+  chassis.moveToPoint(-37, 40.4, 2000, {.forwards = false});
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
 }
 
@@ -1326,7 +1326,7 @@ void autonomous() {
   //} else {
   // left_auton();
   // }
-  clearPark();
+  right_auton();
   // test_distance_reset();
   
 }
