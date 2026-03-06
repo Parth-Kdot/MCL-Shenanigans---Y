@@ -33,7 +33,7 @@ extern pros::adi::DigitalOut piston3;
 extern pros::adi::DigitalIn auton_selector;
 extern Intake intake;
 
-pros::Distance distFront(1); // Front distance sensor
+pros::Distance distFront(16); // Front distance sensor
 pros::Distance distBack(14);  // Back distance sensor
 
 void set_score_piston_state(bool state) {
@@ -407,7 +407,7 @@ void leftside_doinker_auton() {
 
   chassis.turnToHeading(180, 1000);
   //    chassis.waitUntilDone();
-  chassis.moveToPoint(-27.5, -9.25, 3000);
+  chassis.moveToPoint(-27.5, -10, 3000);
   pros::delay(1100);
   // 6. Alignment / Interaction Phase
   //      chassis.arcade(85, 0);
@@ -460,15 +460,15 @@ set_doinker_piston_state(true);
 
   //    chassis.waitUntilDone();
 
-  chassis.moveToPoint(41.5, 10, 4000);
+  chassis.moveToPoint(41, 10, 4000);
   //    chassis.waitUntilDone();
   pros::delay(1000);
   set_matchload_piston_state(true);
 
   chassis.turnToHeading(180, 1000);
   //    chassis.waitUntilDone();
-  chassis.moveToPoint(41.5, -9.5, 3000);
-  pros::delay(100);
+  chassis.moveToPoint(41, -10.3, 3000, {.minSpeed=90});
+  pros::delay(800);
   // 6. Alignment / Interaction Phase
   //      chassis.arcade(85, 0);
   //    pros::delay(1000);
@@ -476,9 +476,9 @@ set_doinker_piston_state(true);
   // chassis.arcade(0,0);
   // pros::delay(1000); // wait for any oscillations to settle
 
-  // 7. Back away and Final Intake
+  // 7. Back away and Final Outtake
   // Move backwards (forwards = false)
-  chassis.moveToPoint(41.5, 26, 3000, {.forwards = false, .maxSpeed = 100});
+  chassis.moveToPoint(41, 26, 3000, {.forwards = false, .maxSpeed = 100});
   //    chassis.waitUntilDone();
   pros::delay(1000);
 
@@ -492,11 +492,11 @@ set_doinker_piston_state(true);
 //Doinker Everything Into the control bonus area
   chassis.moveToPoint(41.5, 10, 2000, {.minSpeed = 30});
   chassis.turnToHeading(135, 1000, {.minSpeed = 30});
-  chassis.moveToPoint(30, 17, 1200, {.forwards = false, .minSpeed = 40});
+  chassis.moveToPoint(29.5, 17, 1200, {.forwards = false, .minSpeed = 40});
   chassis.turnToHeading(180, 1000, {.minSpeed = 30});
-  chassis.moveToPoint(30, 30, 2000, {.forwards = false, .minSpeed = 80});
+  chassis.moveToPoint(29.5, 30, 2000, {.forwards = false, .minSpeed = 80});
   chassis.turnToHeading(185, 400, {.minSpeed = 50});
-  chassis.moveToPoint(30.5, 43, 2000, {.forwards = false, .minSpeed = 100});
+  chassis.moveToPoint(30, 42, 2000, {.forwards = false, .minSpeed = 100});
 
   // 8. Doinker everything in.
 //  chassis.moveToPoint(39, 11.3, 1500);
@@ -724,6 +724,57 @@ void inverse_skills() {
 
 }
 
+
+// =============================================================
+//  TEST: Drive away from wall until back sensor exceeds threshold
+// =============================================================
+void test_back_sensor_drive(int targetDist, int speed = 50) {
+  pros::delay(50); // Allow sensor to stabilize
+
+  int currentDist = distBack.get_distance();
+
+  if (currentDist > 3000) {
+    pros::lcd::print(4, "Sensor error! Dist=%dmm", currentDist);
+    return;
+  }
+
+  pros::lcd::print(4, "BACK Target=%dmm Curr=%dmm", targetDist, currentDist);
+
+  const int MIN_SPEED = 25;   // Minimum speed to prevent stalling
+  const int SLOW_RANGE = 50; // Start slowing down within 100mm of target
+
+  if (currentDist > targetDist) {
+    while (distBack.get_distance() > targetDist) {
+      int dist = distBack.get_distance();
+      int error = dist - targetDist;
+      int moveSpeed =
+          (error < SLOW_RANGE)
+              ? (MIN_SPEED + (speed - MIN_SPEED) * error / SLOW_RANGE)
+              : speed;
+      leftMotors.move_velocity(-moveSpeed);
+      rightMotors.move_velocity(-moveSpeed);
+      pros::delay(10);
+    }
+  } else if (currentDist < targetDist) {
+    while (distBack.get_distance() < targetDist) {
+      int dist = distBack.get_distance();
+      int error = targetDist - dist;
+      int moveSpeed =
+          (error < SLOW_RANGE)
+              ? (MIN_SPEED + (speed - MIN_SPEED) * error / SLOW_RANGE)
+              : speed;
+      leftMotors.move_velocity(moveSpeed);
+      rightMotors.move_velocity(moveSpeed);
+      pros::delay(10);
+    }
+  }
+
+  // Stop motors once target distance is reached
+  leftMotors.move_velocity(0);
+  rightMotors.move_velocity(0);
+}
+
+
 // =============================================================
 //  SKILLS AUTONOMOUS ROUTINE
 // =============================================================
@@ -929,7 +980,7 @@ void skills() {
 
   intake.telOP(false, false, false, false, false);
 
-      inverse_skills();
+  inverse_skills();
 
 
 
@@ -937,35 +988,13 @@ void skills() {
 
 
 
-  // chassis.moveToPoint(30, -23.63, 1500, {.maxSpeed = 80});
-  
-  // // Resume Back to normal track
-  // chassis.moveToPoint(54.446, -33.63, 1500,
-  //                     {.forwards = false, .maxSpeed = 60});
-  // //    pros::delay(900);
 
-  // // Third Wall Reset
-  // chassis.turnToHeading(180, 900);
-  // set_matchload_piston_state(true);
-  // pros::delay(50);
-  // resetToDistance(495, true);
 
-  // // Line up X with matchloader
 
-  // chassis.turnToHeading(90, 900);
 
-  // // Start intake and lower matchload_piston
 
-  // intake.telOP(true, false, false, false, false);
 
-  // pros::delay(50);
-  // // Matchloader interaction phase #3
-  // chassis.moveToPoint(76.2, -33.63, 1000, {.maxSpeed = 50});
-  // chassis.waitUntilDone();
 
-  // chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
-  // pros::delay(2000);
-  // chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 
 
 
@@ -1286,7 +1315,7 @@ void left_auton() {
   chassis.waitUntilDone();
 
   // 3. Score middle blocks
-  chassis.moveToPoint(10.75, 37.5, 2000,
+  chassis.moveToPoint(10.25, 37.5, 2000,
                       {.forwards = false});
 //  set_score_piston_state(false);
   chassis.waitUntilDone();
@@ -1306,7 +1335,7 @@ set_score_piston_state(true);
   chassis.waitUntilDone();
 
   // 5. Interact with left match loader
-  chassis.arcade(85, 0);
+  chassis.arcade(90, 0);
   pros::delay(1000);
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
   chassis.arcade(5, 0);
@@ -1465,7 +1494,7 @@ void test_distance_reset() {
   set_matchload_piston_state(true);
   pros::delay(200);
   chassis.setPose(0, 0, 0);
-  resetToDistance(500, false);
+  resetToDistance(600, false);
   pros::delay(7000);
   intake.telOP(true, false, false, false, false);
 }
@@ -1481,13 +1510,74 @@ void clearPark(){
   chassis.moveToPoint(0, 24, 2000, {.maxSpeed = 100});
   chassis.waitUntilDone();
 }
+
+void other_team_AWP(){
+  chassis.setPose(0, 0, 0);
+  chassis.turnToHeading(270, 1400);
+  chassis.moveToPoint(-3, 0, 2000);
+  chassis.turnToHeading(180, 1400);
+  chassis.moveToPoint(-3, -5, 2000);
+}
+
+void leroy_galaxy_AWP(){
+  // 1. Setup Initial State
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+  chassis.setPose(0, 0, 0);
+  pros::delay(3000);
+  intake.telOP(true, false, false, false, false);
+//  set_score_piston_state(false);
+
+chassis.moveToPoint(0, 10, 1300);
+chassis.turnToHeading(270, 1200);
+  // 4. Move towards left match loader
+  chassis.moveToPoint(-28, 10, 2000, {.maxSpeed = 50});
+  chassis.turnToHeading(180, 1400);
+//  set_score_piston_state(false);
+  matchload_activate(true);
+  chassis.waitUntilDone();
+
+  // 5. Interact with left match loader
+  chassis.arcade(90, 0);
+  pros::delay(1000);
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+  chassis.arcade(5, 0);
+  pros::delay(750); // wait for any oscillations to settle
+
+  // 6. Score in long goal
+//  set_score_piston_state(false);
+  chassis.moveToPoint(-25.5, 24.25, 2000,
+                      {.forwards = false, .earlyExitRange = 2.5});
+  chassis.waitUntilDone();
+//  set_score_piston_state(false);
+  intake.telOP(false, true, false, false, false);
+//  set_score_piston_state(false);
+  pros::delay(1500);
+   set_matchload_piston_state(false);
+  set_doinker_piston_state(true);
+  pros::delay(150);
+
+  // 8. Doinker everything in.
+  chassis.moveToPoint(-37, 11.3, 3000, {.minSpeed = 30});
+  chassis.turnToHeading(180, 1000, {.minSpeed = 30});
+  chassis.moveToPoint(-37, 33.8, 2000, {.forwards = false, .minSpeed = 30});
+  chassis.moveToPoint(-37, 40.4, 2000, {.forwards = false});
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
+}
+
+void do_nothing(){
+   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+  chassis.setPose(0, 0, 0);
+  pros::delay(15000);
+}
+
 void autonomous() {
   //  if (use_right_auton) {
   //  right_auton();
   //} else {
   // left_auton();
   // }
-  right_auton();
+  // skills();
   // test_distance_reset();
-  
+  // test_back_sensor_drive(2150, 400);
+  do_nothing();
 }
