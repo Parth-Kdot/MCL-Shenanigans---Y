@@ -768,7 +768,7 @@ void test_back_sensor_drive(int targetDist, int speed = 50) {
       pros::delay(10);
     }
   }
-
+  
   // Stop motors once target distance is reached
   leftMotors.move_velocity(0);
   rightMotors.move_velocity(0);
@@ -780,16 +780,21 @@ void test_back_sensor_drive(int targetDist, int speed = 50) {
 // =============================================================
 void skills() {
 
+
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
   // Set Initial Position
 
+
   chassis.setPose(-46.477, 8.166, 90);
+
 
   // Run intake + matchload_piston
   chassis.turnToHeading(30.0, 900, {.minSpeed = 50});
 
+
   // intake.telOP(true, false, false, false, false);
   //    pros::delay(1500);
+
 
   // Get Center Balls
   // chassis.moveToPoint(-14.857, 15.209, 1500, {.maxSpeed = 90, .minSpeed = 60});
@@ -798,16 +803,21 @@ void skills() {
 //  pros::delay(450);
 //  set_matchload_piston_state(false);
 
+
   // Stop intake + raise Matchload_piston
 
+
   //    set_matchload_piston_state(false);
+
 
   // chassis.turnToHeading(310.0, 900, {.minSpeed = 30});
 //  pros::delay(500);
 //  set_score_piston_state(true);
 //  pros::delay(500);
 
+
   // Score Center Goal
+
 
   // chassis.moveToPoint(-9.186, -1.533, 2500,
   //                     {.forwards = false, .maxSpeed = 70, .minSpeed = 50});
@@ -816,209 +826,272 @@ void skills() {
   // intake.telOP(false, false, true, false, false);
   // pros::delay(1000);
 
+
   // intake.telOP(false, false, false, false, false);
+
 
   // Line up X with matchloader
   chassis.moveToPoint(-40.504, 33.126, 2000, {.maxSpeed = 70, .minSpeed = 30});
 
+
   chassis.turnToHeading(270.0, 900, {.minSpeed = 20});
   pros::delay(70);
+
 
   // Run intake + matchload_piston
   intake.telOP(true, false, false, false, false);
 
 
+
+
   set_matchload_piston_state(true);
+
 
   pros::delay(50);
 
+
   // Matchloader interaction phase #1
-  chassis.moveToPoint(-63.1, 35.226, 1500, {.maxSpeed = 45}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
+  chassis.moveToPoint(-61.6, 34.226, 1500, {.maxSpeed = 45}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
   chassis.waitUntilDone();
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
-  
+ 
   // pros::delay(1000);
   // chassis.moveToPoint(-62.5, 34.226, 1000, {.maxSpeed = 50});
   pros::delay(2000);
+
 
  // Stop intake + raise Matchload_piston
   // intake.telOP(false, false, false, false, false);
   // pros::delay(1500)
 
+
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+
 
   // Move Back
   chassis.moveToPoint(-50.636, 28.026, 1000,
                       {.forwards = false, .minSpeed = 45});
   chassis.turnToHeading(34.8, 900);
 
+
   pros::delay(100);
   set_matchload_piston_state(false);
+
 
   // Motion Chaining
   //  ADD 4 POINTS
   intake.telOP(true, false, false, false, false);
 
+
   chassis.moveToPose(-46.492, 45.325, 56.1, 1500, {.minSpeed = 80});
+
 
   chassis.moveToPose(-40.238, 49.613, 74.5, 1500, {.minSpeed = 80});
 
+
   chassis.moveToPose(-31.758, 49.946, 90, 1500, {.minSpeed = 80});
+
 
   chassis.moveToPose(-22.333, 49.895, 90, 1500, {.minSpeed = 80});
 
+
   chassis.moveToPoint(54.689, 50.189, 5000, {.maxSpeed = 85,});
 
+
   // Make all 4 Wall Reset impact Y
+
 
   // First Wall Reset
 //  set_matchload_piston_state(true);
 //  pros::delay(50);
   pros::delay(150);
 
+
   chassis.moveToPoint(56.689, 39.526, 2000, {.maxSpeed = 80});
+
 
   chassis.turnToHeading(180.0, 1100);
 
+
 //  pros::delay(150);
 
-  resetToDistance(440, false);
+
+  resetToDistance(380, false);
+
 
   //align with long goal and score
   chassis.turnToHeading(90.0, 1300);
-  chassis.moveToPoint(27.737, 36.026, 2000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30});
+  chassis.moveToPoint(27.737, 36.026, 3000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30});
   pros::delay(600);
   intake.telOP(false, true, false, false, false);
-  pros::delay(2000);
+  pros::delay(2500);
+
 
   // Run intake
   intake.telOP(true, false, false, false, false);
 
+
   set_matchload_piston_state(true);
   pros::delay(50);
 
+
   // Matchloader interaction phase #2
-  chassis.moveToPoint(82.800, 36.026, 1800, {.maxSpeed = 50}); //was 2000 timeout before if you want to revert
+  chassis.moveToPoint(83.200, 37.026, 1800, {.maxSpeed = 50}); //was 2000 timeout before if you want to revert
   chassis.waitUntilDone();
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
   pros::delay(2400);
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
-
+   
   // Score balls into left long goal
-  chassis.moveToPoint(28.737, 37.026, 2500,
+  chassis.moveToPoint(28.737, 37.026, 3000,
                       {
                           .forwards = false,
                           .maxSpeed = 80,
                       });
   set_matchload_piston_state(false);
-  pros::delay(750);
+  pros::delay(1000);
   intake.telOP(false, true, false, false, false);
-  pros::delay(2100);
+  pros::delay(2500);
   intake.telOP(false, false, false, false, false);
+
 
   chassis.moveToPoint(50.245, 38.026, 1200, {.maxSpeed = 70, .minSpeed = 30});
 
+
   chassis.turnToHeading(180, 900, {.minSpeed = 20});
+
 
   chassis.moveToPoint(50.636, -65.026, 4000, {.maxSpeed = 70, .minSpeed = 30});
   pros::delay(1000);
-  
-  
-  
-  
-  
+ 
+ 
+ 
+ 
+ 
+ 
+
 
   // MIRRORING BEGINS
 
 
-  
+
+
+ 
 // COMMENTED OUT DUE TO PILLAR
-    
-  // chassis.turnToHeading(90.0, 900, {.minSpeed = 20});
+   
+  chassis.turnToHeading(90.0, 900, {.minSpeed = 20});
+
 
 //   // Run intake + matchload_piston
-//   intake.telOP(true, false, false, false, false);
+  intake.telOP(true, false, false, false, false);
 
 
-//   set_matchload_piston_state(true);
 
-//   pros::delay(50);
+
+  set_matchload_piston_state(true);
+
+
+  pros::delay(50);
+
 
 //   // Matchloader interaction phase #1
-//   chassis.moveToPoint(63.1, -36.226, 1500, {.maxSpeed = 50}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
-//   chassis.waitUntilDone();
-//   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
-  
-//   // pros::delay(1000);
-//   // chassis.moveToPoint(-62.5, 34.226, 1000, {.maxSpeed = 50});
-//   pros::delay(2000);
+  chassis.moveToPoint(73.1, -62.726, 1500, {.maxSpeed = 50}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
+  chassis.waitUntilDone();
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+ 
+  // pros::delay(1000);
+  // chassis.moveToPoint(-62.5, 34.226, 1000, {.maxSpeed = 50});
+  pros::delay(2000);
+
 
 //  // Stop intake + raise Matchload_piston
 //   // intake.telOP(false, false, false, false, false);
 //   // pros::delay(1500)
 
-//   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 
-  // Move Back
-  // chassis.moveToPoint(50.636, -28.026, 1000,
-  //                     {.forwards = false, .minSpeed = 45});
-  // chassis.turnToHeading(214.8, 900);
-  // pros::delay(1000);
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 
-  // pros::delay(100);
-  // set_matchload_piston_state(false);
+
+//   Move Back
+  chassis.moveToPoint(50.636, -62.026, 1000,
+                      {.forwards = false, .minSpeed = 45});
+  set_matchload_piston_state(false);
+
+  chassis.turnToHeading(200, 900);
+  pros::delay(1000);
+
+
+//   pros::delay(100);
+//   set_matchload_piston_state(false);
+
 
   // Motion Chaining
   //  ADD 4 POINTS
   intake.telOP(true, false, false, false, false);
 
+
   chassis.moveToPose(46.492, -80.325, 236.1, 1500, {.minSpeed = 80});
+
 
   chassis.moveToPose(40.238, -84.613, 254.5, 1500, {.minSpeed = 80});
 
+
   chassis.moveToPose(31.758, -84.946, 270, 1500, {.minSpeed = 80});
+
 
   chassis.moveToPose(22.333, -84.895, 270, 1500, {.minSpeed = 80});
 
+
   chassis.moveToPoint(-54.689, -85.189, 5000, {.maxSpeed = 85,});
 
+
   // Make all 4 Wall Reset impact Y  
+
 
   // First Wall Reset
 //  set_matchload_piston_state(true);
 //  pros::delay(50);
   pros::delay(150);
 
+
   chassis.moveToPoint(-50.689, -68.526, 2000, {.maxSpeed = 80});
+
 
   chassis.turnToHeading(360.0, 1100);
 
+
 //  pros::delay(150);
 
-  resetToDistance(440, false);
+
+  resetToDistance(415, false);
+
 
   //align with long goal and score
   chassis.turnToHeading(270.0, 1300);
-  chassis.moveToPoint(-23.737, -71.026, 2000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30});
+  chassis.moveToPoint(-21.0, -71.026, 2000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30});
   pros::delay(600);
   intake.telOP(false, true, false, false, false);
   pros::delay(2000);
 
+
   // Run intake
   intake.telOP(true, false, false, false, false);
+
 
   set_matchload_piston_state(true);
   pros::delay(50);
 
+
   // Matchloader interaction phase #2
-  chassis.moveToPoint(-84.800, -69.776, 1800, {.maxSpeed = 50}); //was 2000 timeout before if you want to revert
+  chassis.moveToPoint(-85.600, -70.776, 1800, {.maxSpeed = 50}); //was 2000 timeout before if you want to revert
   chassis.waitUntilDone();
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
   pros::delay(2400);
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 
+
   // Score balls into left long goal
-  chassis.moveToPoint(-23.737, -70.626, 2500,
+  chassis.moveToPoint(-23.1, -70.626, 2500,
                       {
                           .forwards = false,
                           .maxSpeed = 80,
@@ -1029,7 +1102,12 @@ void skills() {
   pros::delay(2100);
   intake.telOP(false, false, false, false, false);
 
+
   chassis.moveToPoint(-48.245, -67.026, 1200, {.maxSpeed = 70, .minSpeed = 30});
+
+
+
+
 
 
 
@@ -1043,12 +1121,16 @@ void skills() {
   pros::delay(150);
   // Cross Over Blue Parking
   chassis.moveToPose(-65.728, -60.26, 0, 1800, {.forwards=false, .minSpeed = 90});
+  // pros::delay(1000);
+  // chassis.turnToHeading(350, 400);
+  // pros::delay(1000);
+
+
   intake.telOP(true, false, false, false, false);
   set_matchload_piston_state(false);
   pros::delay(150);
-  chassis.moveToPoint(-65.728, -28.26, 1800, { .minSpeed = 120});
-  
-  
+  chassis.moveToPoint(-65.728, -28.26, 1800, { .minSpeed = 127});
+ 
 
   
   //chassis.moveToPoint(-81.728, 5.26, 1800, {.forwards=false, .maxSpeed = 60, .minSpeed = 20});
