@@ -2891,7 +2891,7 @@ void skills() {
 
 
   // Line up X with matchloader
-  chassis.moveToPoint(-40.504, 33.126, 2000, {.maxSpeed = 70, .minSpeed = 30});
+  chassis.moveToPoint(-40.504, 32.226, 2000, {.maxSpeed = 70, .minSpeed = 30});
 
 
 
@@ -2939,13 +2939,17 @@ void skills() {
 
 
   // Matchloader interaction phase #1
-  chassis.moveToPoint(-58.6, 33.226, 1500, {.maxSpeed = 45}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
+  chassis.moveToPoint(-59.1, 32.226, 1100, {.maxSpeed = 45}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
   chassis.waitUntilDone();
+  // chassis.moveToPoint(-58.1, 32.226, 500, {.forwards=false, .maxSpeed = 45}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
+  // chassis.waitUntilDone();
+  // chassis.moveToPoint(-59.1, 32.226, 750, {.maxSpeed = 45}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
+  // chassis.waitUntilDone();
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
  
   // pros::delay(1000);
   // chassis.moveToPoint(-62.5, 34.226, 1000, {.maxSpeed = 50});
-  pros::delay(2100);
+  pros::delay(2200);
 
 
 
@@ -3130,14 +3134,14 @@ void skills() {
 
 
   // Matchloader interaction phase #2
-  chassis.moveToPoint(81.200, 40.000, 2300, {.maxSpeed = 60}); //was 2000 timeout before if you want to revert
+  chassis.moveToPoint(80.300, 39.500, 2300, {.maxSpeed = 60}); //was 2000 timeout before if you want to revert
   chassis.waitUntilDone();
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
   pros::delay(2000);
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
    
   // Score balls into left long goal
-  chassis.moveToPoint(28.737, 40.026, 3000,
+  chassis.moveToPoint(28.737, 37.526, 3000,
                       {
                           .forwards = false,
                           .maxSpeed = 60,
@@ -3151,8 +3155,8 @@ void skills() {
 
 
 
-  chassis.moveToPoint(50.245, 38.026, 1200, {.maxSpeed = 70, .minSpeed = 30});
-
+  chassis.moveToPoint(54.245, 38.026, 1200, {.maxSpeed = 70, .minSpeed = 30});
+   
 
 
 
@@ -3161,7 +3165,7 @@ void skills() {
 
 
 
-  chassis.moveToPoint(50.636, -65.026, 4000, {.maxSpeed = 70, .minSpeed = 30});
+  chassis.moveToPoint(54.245, -64.026, 4000, {.maxSpeed = 70, .minSpeed = 30});
   pros::delay(1000);
  
   // MIRRORING BEGINS
@@ -3184,12 +3188,12 @@ void skills() {
 
 
 //   // Matchloader interaction phase #1
-  chassis.moveToPoint(73.1, -60.226, 1500, {.maxSpeed = 60}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
+  chassis.moveToPoint(75, -60.26, 1500, {.maxSpeed = 60}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
   chassis.waitUntilDone();
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
   // pros::delay(1000);
   // chassis.moveToPoint(-62.5, 34.226, 1000, {.maxSpeed = 50});
-  pros::delay(2000);
+  pros::delay(2300);
 //  // Stop intake + raise Matchload_piston
 //   // intake.telOP(false, false, false, false, false);
 //   // pros::delay(1500)
@@ -3225,7 +3229,7 @@ void skills() {
   chassis.moveToPose(22.333, -80.895, 270, 1500, {.minSpeed = 80});
 
 
-  chassis.moveToPoint(-54.689, -82.189, 5000, {.maxSpeed = 85,});
+  chassis.moveToPoint(-46.689, -82.189, 5000, {.maxSpeed = 85,});
 
 
   // Make all 4 Wall Reset impact Y  
@@ -3235,8 +3239,8 @@ void skills() {
 //  set_matchload_piston_state(true);
 //  pros::delay(50);
   pros::delay(150);
-  chassis.moveToPoint(-50.689, -69.526, 2000, {.maxSpeed = 80});
   chassis.turnToHeading(360.0, 1100);
+  chassis.moveToPoint(-46.689, -71, 2000, {.maxSpeed = 80});
 //  pros::delay(150);
 
 
@@ -3245,7 +3249,7 @@ void skills() {
 
   //align with long goal and score
   chassis.turnToHeading(270.0, 1300);
-  chassis.moveToPoint(-21.5, -71.750, 2000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30});
+  chassis.moveToPoint(-20.25, -71, 2000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30});
   pros::delay(600);
   intake.telOP(false, true, false, false, false);
   pros::delay(2000);
@@ -3258,15 +3262,15 @@ void skills() {
 
 
   // Matchloader interaction phase #2
-  chassis.moveToPoint(-85.600, -74.006, 2000, {.maxSpeed = 60}); //was 2000 timeout before if you want to revert
+  chassis.moveToPoint(-85.600, -71, 2000, {.maxSpeed = 60}); //was 2000 timeout before if you want to revert
   chassis.waitUntilDone();
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
-  pros::delay(2000);
+  pros::delay(2300);
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 
 
   // Score balls into left long goal
-  chassis.moveToPoint(-20.25, -72.85, 2500,
+  chassis.moveToPoint(-20.25, -71, 2500,
                       {
                           .forwards = false,
                           .maxSpeed = 80,
@@ -4539,7 +4543,7 @@ void autonomous() {
   // skills();
   // test_distance_reset();
   // test_back_sensor_drive(2150, 400);
-left_auton();
+skills();
 }
 
 
