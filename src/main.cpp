@@ -96,9 +96,9 @@ bool pL2_prev = false;
 
 
 
-// Auton selector state: true = right_auton, false = left_auton
-bool use_right_auton = true;
-bool auton_btn_prev = false;
+// Auton selector state: 0=do_nothing, 1=skills, 2=left_auton, 3=left_doinker, 4=right_auton
+int selected_auton = 0;
+const char* auton_names[] = {"DO NOTHING", "SKILLS", "LEFT AUTON", "LEFT DOINKER", "RIGHT AUTON"};
 
 
 
@@ -120,7 +120,6 @@ extern pros::MotorGroup top_intake;
 extern pros::adi::DigitalOut piston1;
 extern pros::adi::DigitalOut piston2;
 extern pros::adi::DigitalOut piston3;
-extern pros::adi::DigitalIn auton_selector;
 extern Intake intake;
 
 
@@ -727,7 +726,6 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 pros::adi::DigitalOut piston1('A'); // piston on port A, score
 pros::adi::DigitalOut piston2('B'); // piston on port B, match loader
 pros::adi::DigitalOut piston3('C'); // piston on port C, doinker
-pros::adi::DigitalIn auton_selector('D');
 
 
 
@@ -785,6 +783,7 @@ lemlib::TrackingWheel vertical(&verticalEnc, lemlib::Omniwheel::NEW_2, 2.5);
 
 
 // drivetrain settings
+// drivetrain settings
 lemlib::Drivetrain drivetrain(
     &leftMotors,  // left motor group
     &rightMotors, // right motor group
@@ -792,21 +791,6 @@ lemlib::Drivetrain drivetrain(
     lemlib::Omniwheel::NEW_325, 450,
     8 // horizontal drift is 2. If we had traction wheels, it would have been 8
 );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 lemlib::ControllerSettings
     lateral_controller(13,  // proportional gain (kP)
@@ -820,21 +804,6 @@ lemlib::ControllerSettings
                        1    // maximum acceleration (slew)
     );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 lemlib::ControllerSettings
     angular_controller(4,   // proportional gain (kP)
                        0,   // integral gain (kI)
@@ -846,7 +815,6 @@ lemlib::ControllerSettings
                        500, // large error range timeout, in milliseconds
                        0    // maximum acceleration (slew)
     );
-
 
 
 
@@ -961,62 +929,93 @@ void initialize() {
   set_score_piston_state(true); // ensure score piston starts engaged
   chassis.calibrate();          // calibrate sensors
   set_doinker_piston_state(true);
-  // set_matchload_piston_state(true);
-  //  the default rate is 50. however, if you need to change the rate, you
-  //  can do the following.
-  //  lemlib::bufferedStdout().setRate(...);
-  //  If you use bluetooth or a wired connection, you will want to have a rate
-  //  of 10ms
 
+  // Auton selector - touchscreen buttons on the V5 brain screen (480x240)
+  // Draw two large buttons: LEFT arrow and RIGHT arrow
+  // and show the current auton name in the center
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // for more information on how the formatting for the loggers
-  // works, refer to the fmtlib docs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // thread to for brain screen and position logging
-  pros::Task screenTask([&]() {
+  pros::Task selectorTask([&]() {
     while (true) {
-      // print robot location to the brain screen
-      pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
-      pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
-      pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-      controller.print(0, 0, "Intake Temp: %f", pros::c::motor_get_temperature(1)); // x            // log position telemetry
-      // pros::c::motor_get_temperature(19)); // x            // log position
-      // telemetry controller.print(1, 0, "Auton: %d", autonselected);
+      // Check for screen touch
+      pros::screen_touch_status_s_t touch = pros::c::screen_touch_status();
+      if (touch.touch_status == TOUCH_PRESSED) {
+        // Left button area: x 0-140, y 140-230
+        if (touch.x < 140 && touch.y > 140) {
+          selected_auton--;
+          if (selected_auton < 0) selected_auton = 4;
+          pros::delay(250); // debounce
+        }
+        // Right button area: x 340-480, y 140-230
+        else if (touch.x > 340 && touch.y > 140) {
+          selected_auton++;
+          if (selected_auton > 4) selected_auton = 0;
+          pros::delay(250); // debounce
+        }
+      }
+
+      // Clear screen
+      pros::screen::set_eraser(pros::c::COLOR_BLACK);
+      pros::screen::erase();
+
+      // Draw position info at top (small text)
+      pros::screen::set_pen(pros::c::COLOR_WHITE);
+      pros::screen::print(pros::E_TEXT_SMALL, 10, 10, "X:%.1f Y:%.1f T:%.1f",
+        chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+
+      // Draw auton name in center (large text)
+      pros::screen::set_pen(pros::c::COLOR_YELLOW);
+      pros::screen::print(pros::E_TEXT_LARGE, 120, 70, "%s", auton_names[selected_auton]);
+
+      // Draw LEFT button
+      pros::screen::set_pen(pros::c::COLOR_BLUE);
+      pros::screen::fill_rect(10, 140, 130, 225);
+      pros::screen::set_pen(pros::c::COLOR_WHITE);
+      pros::screen::print(pros::E_TEXT_LARGE, 35, 170, "< PREV");
+
+      // Draw RIGHT button
+      pros::screen::set_pen(pros::c::COLOR_BLUE);
+      pros::screen::fill_rect(350, 140, 470, 225);
+      pros::screen::set_pen(pros::c::COLOR_WHITE);
+      pros::screen::print(pros::E_TEXT_LARGE, 370, 170, "NEXT >");
+
+      // Show on controller too
+      controller.print(0, 0, "A: %s", auton_names[selected_auton]);
+
       lemlib::telemetrySink()->info("Chassis pose: {}", chassis.getPose());
-      // delay to save resources
-      pros::delay(100);
+      pros::delay(50);
     }
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1038,49 +1037,35 @@ void initialize() {
  */
 void disabled() {
   while (true) {
-    bool auton_btn = auton_selector.get_value();
-    // Toggle on rising edge (button press)
-    if (auton_btn && !auton_btn_prev) {
-      use_right_auton = !use_right_auton;
-    }
-    auton_btn_prev = auton_btn;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // Show current selection on brain screen
-    pros::lcd::print(5, "Auton: %s", use_right_auton ? "RIGHT" : "LEFT");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    pros::screen::set_pen(pros::c::COLOR_YELLOW);
+    pros::screen::print(pros::E_TEXT_LARGE, 120, 110, "AUTON: %s", auton_names[selected_auton]);
     pros::delay(20);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1626,6 +1611,22 @@ void opcontrol() {
   // controller
   // loop to continuously update motors
   while (true) {
+    // Press DOWN arrow to manually run selected auton (for practice without field control)
+    if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+      controller.print(0, 0, "AUTON IN 3...");
+      controller.rumble("-");
+      pros::delay(1000);
+      controller.print(0, 0, "AUTON IN 2...");
+      controller.rumble("-");
+      pros::delay(1000);
+      controller.print(0, 0, "AUTON IN 1...");
+      controller.rumble("-");
+      pros::delay(1000);
+      controller.print(0, 0, "RUNNING!     ");
+      controller.rumble(".");
+      autonomous();
+    }
+
     // get joystick positions
     int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
     int leftX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
@@ -2777,7 +2778,7 @@ void skills() {
 
 
 
-  chassis.setPose(-46.477, 8.166, 90);
+  chassis.setPose(-44.077, 8.166, 90);
 
 
 
@@ -4533,18 +4534,23 @@ void do_nothing(){
   pros::delay(15000);
 }
 
+void angular_tuning() {
+  // 1. Use HOLD so it behaves like it will in a match
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+  chassis.setPose(0, 0, 0);
+  chassis.turnToHeading(90, 2000, {.maxSpeed = 100});
+  pros::delay(5000);
+  chassis.turnToHeading(0, 2000, {.maxSpeed = 100});
 
-void autonomous() {
-  //  if (use_right_auton) {
-  //  right_auton();
-  //} else {
-  // left_auton();
-  // }
-  // skills();
-  // test_distance_reset();
-  // test_back_sensor_drive(2150, 400);
-skills();
 }
 
 
-
+void autonomous() {
+  switch (selected_auton) {
+    case 1: skills(); break;
+    case 2: left_auton(); break;
+    case 3: leftside_doinker_auton(); break;
+    case 4: right_auton(); break;
+    default: do_nothing(); break;
+  }
+}
