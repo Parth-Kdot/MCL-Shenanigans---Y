@@ -2694,7 +2694,7 @@ void skills() {
 
 
   // Line up X with matchloader
-  chassis.moveToPoint(-40.504, 32.226, 2000, {.maxSpeed = 70, .minSpeed = 30});
+  chassis.moveToPoint(-40.504, 33.126, 2000, {.maxSpeed = 70, .minSpeed = 30});
 
 
 
@@ -2743,7 +2743,7 @@ void skills() {
 
 
   // Matchloader interaction phase #1
-  chassis.moveToPoint(-62, 34.226, 1500, {.maxSpeed = 45}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
+  chassis.moveToPoint(-62, 34.926, 1500, {.maxSpeed = 45}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
   chassis.waitUntilDone();
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
 
@@ -2786,7 +2786,7 @@ void skills() {
 
 
 
-  chassis.moveToPose(-40.492, 45.325, 56.1, 1500, {.minSpeed = 80});
+  chassis.moveToPose(-39.492, 45.325, 56.1, 1500, {.minSpeed = 80});
 
 
 
@@ -2964,7 +2964,7 @@ void skills() {
 
 
 //   // Matchloader interaction phase #1
-  chassis.moveToPoint(74.5, -61.26, 1500, {.maxSpeed = 45}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
+  chassis.moveToPoint(74.5, -60.26, 1500, {.maxSpeed = 45}); //WAS 63.4 BEFORE IF YOU WANT TO REVERT
   chassis.waitUntilDone();
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
   // pros::delay(1000);
@@ -3005,7 +3005,7 @@ void skills() {
   chassis.moveToPose(22.333, -80.895, 270, 1500, {.minSpeed = 80});
 
 
-  chassis.moveToPoint(-46.689, -82.189, 5000, {.maxSpeed = 85,});
+  chassis.moveToPoint(-45.689, -82.189, 5000, {.maxSpeed = 85,});
 
 
   // Make all 4 Wall Reset impact Y
@@ -3025,7 +3025,7 @@ void skills() {
 
   //align with long goal and score
   chassis.turnToHeading(270.0, 1300);
-  chassis.moveToPoint(-20.25, -71, 2000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30});
+  chassis.moveToPoint(-18.25, -71, 2000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30});
   pros::delay(600);
   intake.telOP(false, true, false, false, false);
   pros::delay(2000);
@@ -3046,7 +3046,7 @@ void skills() {
 
 
   // Score balls into left long goal
-  chassis.moveToPoint(-20.25, -71, 2500,
+  chassis.moveToPoint(-18.25, -71, 2500,
                       {
                           .forwards = false,
                           .maxSpeed = 80,
