@@ -98,7 +98,7 @@ bool pL2_prev = false;
 
 // Auton selector state: 0=do_nothing, 1=skills, 2=left_auton, 3=left_doinker, 4=right_auton
 int selected_auton = 0;
-const char* auton_names[] = {"DO NOTHING", "SKILLS", "LEFT AUTON", "LEFT DOINKER", "RIGHT AUTON"};
+const char* auton_names[] = {"DO NOTHING", "SKILLS", "LEFT AUTON", "LEFT DOINKER", "RIGHT AUTON", "LEFTSIDE_RUSH"};
 
 
 
@@ -942,13 +942,13 @@ void initialize() {
         // Left button area: x 0-140, y 140-230
         if (touch.x < 140 && touch.y > 140) {
           selected_auton--;
-          if (selected_auton < 0) selected_auton = 4;
+          if (selected_auton < 0) selected_auton = 5;
           pros::delay(250); // debounce
         }
         // Right button area: x 340-480, y 140-230
         else if (touch.x > 340 && touch.y > 140) {
           selected_auton++;
-          if (selected_auton > 4) selected_auton = 0;
+          if (selected_auton > 5) selected_auton = 0;
           pros::delay(250); // debounce
         }
       }
@@ -1446,7 +1446,7 @@ set_doinker_piston_state(true);
 
 
 
-
+  
 
 
 
@@ -3939,6 +3939,303 @@ set_score_piston_state(true);
   pros::delay(1500);
 }
 
+void leftside_Rush() {
+  // 1. Setup Initial State
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+  chassis.setPose(0, 0, 0);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//  set_score_piston_state(false);
+  // 3. Start Intake and Move to First Position
+  // We access the global motor group directly
+  intake.telOP(true, false, false, false, false);
+//  set_score_piston_state(false);
+  // Move to x: 10.174, y: 34.154, theta: 20.36
+  chassis.moveToPose(-10.174, 36.154, 339.64, 2000);
+  //    chassis.waitUntil(12.5);
+  pros::delay(1000);
+  set_matchload_piston_state(true);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // 4. Move to Match Load Ready Position
+  chassis.turnToHeading(240, 3300);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  pros::delay(400);
+  set_matchload_piston_state(false);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  //    chassis.waitUntilDone();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  chassis.moveToPoint(-27.5, 2, 4000);
+  //    chassis.waitUntilDone();
+  pros::delay(1000);
+  set_matchload_piston_state(true);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  chassis.turnToHeading(180, 1000);
+  //    chassis.waitUntilDone();
+  // chassis.moveToPoint(-27.5, -10, 3000);
+  // pros::delay(1100);
+  // 6. Alignment / Interaction Phase
+  //      chassis.arcade(85, 0);
+  //    pros::delay(1000);
+  //  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+  // chassis.arcade(0,0);
+  // pros::delay(1000); // wait for any oscillations to settle
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // 7. Back away and Final Intake
+  // Move backwards (forwards = false)
+  chassis.moveToPoint(-28.5, 25.5, 3000, {.forwards = false, .maxSpeed = 100});
+  //    chassis.waitUntilDone();
+  pros::delay(1200);
+//  set_score_piston_state(false);
+  intake.telOP(false, true, false, false, false);
+//  set_score_piston_state(false);
+  set_matchload_piston_state(false);
+  set_doinker_piston_state(true);
+  pros::delay(1750);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // 8. Doinker everything in.
+  chassis.moveToPoint(-35.9, 11.3, 3000, {.minSpeed = 30});
+  chassis.turnToHeading(180, 1000, {.minSpeed = 30});
+  chassis.moveToPoint(-37, 33.8, 2000, {.forwards = false, .minSpeed = 30});
+  chassis.moveToPoint(-37, 40.4, 2000, {.forwards = false});
+  chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
+}
+
+
+
 
 
 
@@ -4551,6 +4848,7 @@ void autonomous() {
     case 2: left_auton(); break;
     case 3: leftside_doinker_auton(); break;
     case 4: right_auton(); break;
+    case 5: leftside_Rush(); break;
     default: do_nothing(); break;
   }
 }
